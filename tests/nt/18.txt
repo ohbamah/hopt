@@ -1,0 +1,45 @@
+CMD=./hopt_tests -f -name Test -test --count 3 -pid 4 5 6 
+
+Test 0: EOA:no undef:no redef:no(0)
+arg count to skip -1
+Error : hopt: option -n is in bad order, he need argument(s) but is not in last position in a string of shorts options.
+
+Test 1: EOA:yes undef:no redef:no(0)
+arg count to skip -1
+Error : hopt: option -n is in bad order, he need argument(s) but is not in last position in a string of shorts options.
+
+Test 2: EOA:no undef:yes redef:no(0)
+arg count to skip -1
+Error : hopt: option -n is in bad order, he need argument(s) but is not in last position in a string of shorts options.
+
+Test 3: EOA:no undef:no redef:yes(0)
+arg count to skip -1
+Error : hopt: option -n is in bad order, he need argument(s) but is not in last position in a string of shorts options.
+
+Test 4: EOA:no undef:no redef:yes(1)
+arg count to skip -1
+Error : hopt: option -n is in bad order, he need argument(s) but is not in last position in a string of shorts options.
+
+Test 5: EOA:yes undef:yes redef:no(0)
+arg count to skip -1
+Error : hopt: option -n is in bad order, he need argument(s) but is not in last position in a string of shorts options.
+
+Test 6: EOA:yes undef:no redef:yes(0)
+arg count to skip -1
+Error : hopt: option -n is in bad order, he need argument(s) but is not in last position in a string of shorts options.
+
+Test 7: EOA:yes undef:no redef:yes(1)
+arg count to skip -1
+Error : hopt: option -n is in bad order, he need argument(s) but is not in last position in a string of shorts options.
+
+Test 8: EOA:no undef:yes redef:yes(0)
+arg count to skip -1
+Error : hopt: option -n is in bad order, he need argument(s) but is not in last position in a string of shorts options.
+
+Test 9: EOA:no undef:yes redef:yes(1)
+arg count to skip -1
+Error : hopt: option -n is in bad order, he need argument(s) but is not in last position in a string of shorts options.
+
+Test 10: EOA:yes undef:yes redef:yes(1)
+arg count to skip -1
+Error : hopt: option -n is in bad order, he need argument(s) but is not in last position in a string of shorts options.

@@ -1,0 +1,73 @@
+CMD=./hopt_tests -fp 2 1 4 5 6 3 --count 2 random_arg1 -c 3 random_arg2 --name test_name -test str1 str2 str3 
+
+Test 0: EOA:no undef:no redef:no(0)
+arg count to skip -1
+Error : hopt: option -c is redefined.
+
+Test 1: EOA:yes undef:no redef:no(0)
+arg count to skip 9
+flood 1
+count 2
+test (null) (null) (null)
+pids 2 1 4 5 6 3
+name (null)
+
+Test 2: EOA:no undef:yes redef:no(0)
+arg count to skip -1
+Error : hopt: option -c is redefined.
+
+Test 3: EOA:no undef:no redef:yes(0)
+arg count to skip -1
+Error : hopt: option -t is undefined.
+
+Test 4: EOA:no undef:no redef:yes(1)
+arg count to skip -1
+Error : hopt: option -t is undefined.
+
+Test 5: EOA:yes undef:yes redef:no(0)
+arg count to skip 9
+flood 1
+count 2
+test (null) (null) (null)
+pids 2 1 4 5 6 3
+name (null)
+
+Test 6: EOA:yes undef:no redef:yes(0)
+arg count to skip 9
+flood 1
+count 2
+test (null) (null) (null)
+pids 2 1 4 5 6 3
+name (null)
+
+Test 7: EOA:yes undef:no redef:yes(1)
+arg count to skip 9
+flood 1
+count 2
+test (null) (null) (null)
+pids 2 1 4 5 6 3
+name (null)
+
+Test 8: EOA:no undef:yes redef:yes(0)
+arg count to skip 11
+flood 1
+count 2
+test (null) (null) (null)
+pids 2 1 4 5 6 3
+name test_name
+
+Test 9: EOA:no undef:yes redef:yes(1)
+arg count to skip 12
+flood 1
+count 3
+test (null) (null) (null)
+pids 2 1 4 5 6 3
+name test_name
+
+Test 10: EOA:yes undef:yes redef:yes(1)
+arg count to skip 9
+flood 1
+count 2
+test (null) (null) (null)
+pids 2 1 4 5 6 3
+name (null)

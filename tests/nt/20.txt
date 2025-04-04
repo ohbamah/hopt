@@ -1,0 +1,45 @@
+CMD=./hopt_tests -f -p 1 2 3 4 5 --count 3 -name OptionTest -test One Two 
+
+Test 0: EOA:no undef:no redef:no(0)
+arg count to skip -1
+Error : hopt: option -p miss argument(s).
+
+Test 1: EOA:yes undef:no redef:no(0)
+arg count to skip -1
+Error : hopt: option -p miss argument(s).
+
+Test 2: EOA:no undef:yes redef:no(0)
+arg count to skip -1
+Error : hopt: option -p miss argument(s).
+
+Test 3: EOA:no undef:no redef:yes(0)
+arg count to skip -1
+Error : hopt: option -p miss argument(s).
+
+Test 4: EOA:no undef:no redef:yes(1)
+arg count to skip -1
+Error : hopt: option -p miss argument(s).
+
+Test 5: EOA:yes undef:yes redef:no(0)
+arg count to skip -1
+Error : hopt: option -p miss argument(s).
+
+Test 6: EOA:yes undef:no redef:yes(0)
+arg count to skip -1
+Error : hopt: option -p miss argument(s).
+
+Test 7: EOA:yes undef:no redef:yes(1)
+arg count to skip -1
+Error : hopt: option -p miss argument(s).
+
+Test 8: EOA:no undef:yes redef:yes(0)
+arg count to skip -1
+Error : hopt: option -p miss argument(s).
+
+Test 9: EOA:no undef:yes redef:yes(1)
+arg count to skip -1
+Error : hopt: option -p miss argument(s).
+
+Test 10: EOA:yes undef:yes redef:yes(1)
+arg count to skip -1
+Error : hopt: option -p miss argument(s).

@@ -2,27 +2,33 @@
 
 ### Linux
 
-To install repository:
+To install requirements and repository:
 
 ```bash
   apt-get install -y git clang make
-  git clone git@github.com:ohbamah/hopt.git && (cd ./hopt/ && rm -rf ./tests/ ; rm -rf ./benchmark/ ; make)
+  git clone https://github.com/ohbamah/hopt.git
 ```
 
 To copy HOPT to the include path (do it in the repo cloned AND need to be root):
 
 ```bash
-  cp ./libhopt.a /lib/ || cp ./libhopt.a /usr/lib/
-  cp ./includes/hopt.h /usr/include/
+  sudo cp ./libhopt.a /lib/ || cp ./libhopt.a /usr/lib/
+  sudo cp ./includes/hopt.h /usr/include/
+```
+
+All-In-One:
+
+```bash
+  git clone https://github.com/ohbamah/hopt.git && cd ./hopt/ && make && sudo cp ./libhopt.a /lib/ && sudo cp ./includes/hopt.h /usr/include/ && cd .. ; rm ./hopt -rf
 ```
 
 ### MacOS
 
-To install repository:
+To install requirements and repository:
 
 ```bash
   brew install git clang make
-  git clone git@github.com:ohbamah/hopt.git && (cd ./hopt/ && rm -rf ./tests/ ; rm -rf ./benchmark/ ; make)
+  git clone https://github.com/ohbamah/hopt.git
 ```
 
 To copy HOPT to the include path (do it in the repo cloned):
@@ -32,6 +38,12 @@ To copy HOPT to the include path (do it in the repo cloned):
   sudo cp ./libhopt.a /usr/local/lib/
   sudo mkdir -p /usr/local/include/
   sudo cp ./includes/hopt.h /usr/local/inlude/
+```
+
+All-In-One:
+
+```bash
+  sudo mkdir -p /usr/local/lib/ && sudo mkdir -p /usr/local/include/ && git clone https://github.com/ohbamah/hopt.git && cd ./hopt/ && make &&  sudo cp ./libhopt.a /usr/local/lib/ && sudo cp ./includes/hopt.h /usr/local/inlude/ && cd .. ; rm ./hopt -rf
 ```
 
 ### Windows 10/11

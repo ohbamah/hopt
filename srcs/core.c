@@ -91,6 +91,8 @@ FINDER_ERROR(t_hopt* restrict h, int errcode, unsigned int i, int j)
 		else
 			strncpy(hopt_cerr, &h->av[i][1], 15);
 	}
+	if (hopt_auto_help_v == TRUE && (errcode == HOPT_UNDEFINED || errcode == HOPT_MISSOARGC))
+		printf("%s\n", hopt_help_menu());
 }
 
 static inline
@@ -263,4 +265,65 @@ FINDER(t_hopt* restrict h)
 		++i;
 	}
 
+}
+
+void
+hopt_generate_help_menu(void)
+{
+	char*	endonarg_str = "";
+	char*	tmp;
+
+	if (hopt_end_on_arg_v == FALSE)
+		endonarg_str = "[OPTIONS...]";
+	hopt_help_menu_str =
+		hopt_strvajoin(8,
+			"Usage: ", basename(hopt_program_name), " [OPTIONS...] ", "ARGS... ", endonarg_str, "\n",\
+			hopt_program_desc == NULL ? "" : hopt_program_desc, "\n\n");
+	unsigned int	lenmax = 0;
+	for (unsigned int i = 0 ; i < hopt_c_maps ; ++i)
+	{
+		if (hopt_maps[i]->desc != NULL)
+		{
+			char**	splitted = strsplit(hopt_maps[i]->names, '=');
+			char*	aliases = hopt_strjoin("-", splitted[0]);
+			free(splitted[0]);
+			for (int j = 1 ; splitted[j] ; ++j)
+			{
+				tmp = aliases;
+				aliases = hopt_strvajoin(3, aliases, ", -", splitted[j]);
+				free(tmp);
+				free(splitted[j]);
+			}
+			free(splitted);
+			if (strlen(aliases) > lenmax)
+				lenmax = strlen(aliases);
+			free(aliases);
+		}
+	}
+	for (unsigned int i = 0 ; i < hopt_c_maps ; ++i)
+	{
+		if (hopt_maps[i]->desc != NULL)
+		{
+			char**	splitted = strsplit(hopt_maps[i]->names, '=');
+			char*	aliases = hopt_strjoin("-", splitted[0]);
+			free(splitted[0]);
+			for (int j = 1 ; splitted[j] ; ++j)
+			{
+				tmp = aliases;
+				aliases = hopt_strvajoin(3, aliases, ", -", splitted[j]);
+				free(tmp);
+				free(splitted[j]);
+			}
+			free(splitted);
+			int		buffersize = lenmax + strlen(hopt_maps[i]->desc) + 8;
+			char*	line = malloc((buffersize + 1) * sizeof(char));
+			snprintf(line, buffersize, "  %-*s\t%s\n", (int)lenmax, aliases, hopt_maps[i]->desc);
+			line[buffersize] = '\0';
+			tmp = hopt_help_menu_str;
+			hopt_help_menu_str = hopt_strjoin(hopt_help_menu_str, line);
+			free(tmp);
+			free(aliases);
+			free(line);
+		}
+	}
 }

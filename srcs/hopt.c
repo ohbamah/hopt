@@ -30,6 +30,9 @@ char			hopt_cerr[16] = {0};// extern global var in 'hopt.h'
 
 t_hopt_state	hopt_state = {0};
 
+void
+hopt_generate_help_menu(void);
+
 // Parse and interpret options for you :0
 // Call HOPT_ADD_OPTION(...) for each option before
 //
@@ -38,9 +41,9 @@ t_hopt_state	hopt_state = {0};
 int
 hopt(int ac, char** av)
 {
-	t_hopt			h;
+	t_hopt			h = {0};
 
-	memset(&h, 0, sizeof(h));
+	hopt_program_name = av[0];
 	h.ac = ac;
 	h.av = av;
 	h.flags = calloc(hopt_c_maps, sizeof(BOOL));
@@ -73,6 +76,7 @@ hopt_create_map(char* names, int argc, int flag, va_list va)
 		map->cb = va_arg(va, t_hopt_callback);
 		map->cb_arg = va_arg(va, void*);
 	}
+	map->desc = va_arg(va, char*);
 	return (map);
 }
 
@@ -101,6 +105,7 @@ hopt_free(void)
 		free(hopt_maps[i]);
 		hopt_maps[i] = NULL;
 	}
+	free(hopt_help_menu_str);
 }
 
 // Return a string describe error (returned str must be free'd)
@@ -187,6 +192,27 @@ void
 hopt_disable_sort(void)
 {
 	hopt_disable_sort_v = TRUE;
+}
+
+void
+hopt_program_description(char* program_desc)
+{
+	hopt_program_desc = program_desc;
+}
+
+void
+hopt_auto_help(BOOL enable_256termcolor)
+{
+	hopt_256termcolor_v = enable_256termcolor;
+	hopt_auto_help_v = TRUE;
+}
+
+char*
+hopt_help_menu(void)
+{
+	if (hopt_help_menu_str == NULL)
+		hopt_generate_help_menu();
+	return (hopt_help_menu_str);
 }
 
 void

@@ -31,6 +31,7 @@
 # include <string.h>
 # include <ctype.h>
 # include <stdarg.h>
+# include <libgen.h>
 # include "hopt.h"
 
 # define BOOL	char
@@ -44,10 +45,13 @@
 # define hopt_redef_allowed		hopt_state._hopt_redef_allowed
 # define hopt_redef_overwrt		hopt_state._hopt_redef_overwrt
 # define hopt_disable_sort_v	hopt_state._hopt_disable_sort_v
-# define hopt_mallocd			hopt_state._hopt_mallocd
-# define hopt_c_mallocd			hopt_state._hopt_c_mallocd
+# define hopt_auto_help_v		hopt_state._hopt_auto_help_v
+# define hopt_256termcolor_v	hopt_state._hopt_256termcolor_v
 # define hopt_maps				hopt_state._hopt_maps
 # define hopt_c_maps			hopt_state._hopt_c_maps
+# define hopt_help_menu_str		hopt_state._hopt_help_menu_str
+# define hopt_program_name		hopt_state._hopt_program_name
+# define hopt_program_desc		hopt_state._hopt_program_desc
 
 typedef struct hopt_sort
 {
@@ -74,8 +78,11 @@ typedef struct hopt_state
 	BOOL			_hopt_redef_allowed;
 	BOOL			_hopt_redef_overwrt;
 	BOOL			_hopt_disable_sort_v;
-	void**			_hopt_mallocd;
-	unsigned int	_hopt_c_mallocd;
+	BOOL			_hopt_auto_help_v;
+	BOOL			_hopt_256termcolor_v;
+	char*			_hopt_help_menu_str;
+	char*			_hopt_program_name;
+	char*			_hopt_program_desc;
 	t_hopt_map*		_hopt_maps[HOPT_MAX_OPTIONS];
 	unsigned int	_hopt_c_maps;
 	//char*			_hopt_help_str		= NULL;	// !WORK IN PROGRESS!
@@ -94,9 +101,6 @@ typedef struct hopt
 
 extern t_hopt_state	hopt_state;
 
-// test.c
-void			hopt_test_alignment(void);
-
 // lst.c
 t_hopt_sort*	hopt_new_node(unsigned int index, unsigned int argc);
 void			hopt_add_front(t_hopt_sort** head, t_hopt_sort* node);
@@ -107,11 +111,15 @@ void			hopt_free_lstsort(t_hopt_sort* head);
 char**			strsplit(const char* restrict s, char sep);
 void			free2(void**  ptr2);
 unsigned int	strlen2(char* restrict* restrict s);
+char*			hopt_strvajoin(unsigned int count, ...);
+char*			hopt_strjoin(const char* __restrict__ s1, const char* __restrict__ s2);
 
 // core.c
 int
 SORT(int ac, /*const*/ char** av, t_hopt_sort* head);
 void
 FINDER(t_hopt* restrict h);
+void
+hopt_generate_help_menu(void);
 
 #endif

@@ -44,18 +44,16 @@ int	main(int ac, char** av)
 	//hopt_allow_undef();			//? Allow undefined options (ignored)
 	//hopt_end_on_arg();			//? End parsing while a non-option argument appears
 	//hopt_disable_sort();			//? Disable AV sorting
-	//hopt_auto_help();				//? Automatically show the help menu when an option is undefined (or miss argument count)
+	//hopt_auto_help(FALSE/TRUE);	//? Automatically show the help menu when an option is undefined (or miss argument count)
 	//hopt_reset();					//? Reset all HOPT functionnalities (allow redef/undef and end_on_arg)
-	hopt_add_option("c=-count",		1, HOPT_TYPE_INT,	&options.count);
-	hopt_add_option("f=-flood=l",	0, 0,				&options.flood);
-	hopt_add_option("-test",		4, HOPT_TYPE_STR,	&options.test);
-	hopt_add_option("p=-pid=-pids",	6, HOPT_TYPE_INT,	&options.pids);
-	hopt_add_option("n=-name",		1, HOPT_TYPE_STR,	&options.name);//cbtest, &options);
-
+	//hopt_program_description("Send ICMP ECHO_REQUEST packets to network hosts.");
+	hopt_add_option("c=-count",		1, HOPT_TYPE_INT,	&options.count,	"Max packet to send");
+	hopt_add_option("f=-flood=l",	0, 0,				&options.flood,	"Flood network");
+	hopt_add_option("-test",		4, HOPT_TYPE_STR,	&options.test,	NULL);
+	hopt_add_option("p=-pid=-pids",	6, HOPT_TYPE_INT,	&options.pids,	"Pid processes to kill");
+	hopt_add_option("n=-name",		1, HOPT_TYPE_STR,	&options.name,	"");//cbtest, &options);
 	hopt(ac, av);
-
 	//printf("%s\n", hopt_help_menu());
-
 	hopt_free();
 
 	gettimeofday(&tv, NULL);

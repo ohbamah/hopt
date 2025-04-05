@@ -53,7 +53,7 @@ hopt_add_front(t_hopt_sort** head, t_hopt_sort* node)
 }
 
 void
-hopt_add_back(t_hopt_sort** head, t_hopt_sort* node) //? Opti --> Sauvegarder l'adresse du dernier element et modifier son next, tout simple N fois plus rapide
+hopt_add_back(t_hopt_sort** head, t_hopt_sort* node)
 {
 	if (!*head)
 		*head = node;

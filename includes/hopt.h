@@ -42,22 +42,23 @@
 #  define HOPT_MAX_OPTIONS	64
 # endif
 
-# define HOPT_TYPE_DEFAULT	0
-# define HOPT_TYPE_STR		0
-# define HOPT_TYPE_CHAR		1
-# define HOPT_TYPE_SHORT	2
-# define HOPT_TYPE_INT		3
-# define HOPT_TYPE_LONG		4
-# define HOPT_TYPE_FLOAT	5
-# define HOPT_TYPE_DOUBLE	6
-# define HOPT_TYPE_LAST		6
+# define HOPT_TYPE_DEFAULT	0	// Set option type (incompatible with HOPT_FLCB)
+# define HOPT_TYPE_STR		0	// Set option type (incompatible with HOPT_FLCB)
+# define HOPT_TYPE_CHAR		1	// Set option type (incompatible with HOPT_FLCB)
+# define HOPT_TYPE_SHORT	2	// Set option type (incompatible with HOPT_FLCB)
+# define HOPT_TYPE_INT		3	// Set option type (incompatible with HOPT_FLCB)
+# define HOPT_TYPE_LONG		4	// Set option type (incompatible with HOPT_FLCB)
+# define HOPT_TYPE_FLOAT	5	// Set option type (incompatible with HOPT_FLCB)
+# define HOPT_TYPE_DOUBLE	6	// Set option type (incompatible with HOPT_FLCB)
+# define HOPT_TYPE_LAST		6	// Set option type (incompatible with HOPT_FLCB)
 
-# define HOPT_FLCB			7
+# define HOPT_FLCB			7	// Set callback (incompatible with HOPT_TYPE_*)
 
 typedef int (*t_hopt_callback)(int, char**, void*); //ac, av, cb_arg
 
 typedef struct hopt_map
 {
+	char*			desc;
 	char*			names;
 	int				argc;
 	void*			mem;
@@ -110,12 +111,20 @@ char*	hopt_strerror(void);
 		OPTIONS for HOPT
 	*/
 
+// Set program description
+void	hopt_program_description(char* program_desc);
 // Undef allowed is not sorted, same for undef unallowed
 void	hopt_allow_undef(void);
 // @param overwrite The redefinition will overwrite the ancient definition (1), OR just be ignored (0) ?
 void	hopt_allow_redef(char overwrite);
 // Stop parsing on first non-option argument
 void	hopt_end_on_arg(void);
+// Automatically show help menu if there is any undefined option
+//
+// @param enable_256termcolor Active bold and colored text (not working yet)
+void	hopt_auto_help(char enable_256termcolor);
+// Get help menu
+char*	hopt_help_menu(void);
 void	hopt_disable_sort(void);
 void	hopt_reset(void);
 

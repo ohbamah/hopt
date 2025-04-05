@@ -44,6 +44,53 @@ count_string(const char* restrict s, char sep)
 }
 
 char*
+hopt_strjoin(const char* __restrict__ s1, const char* __restrict__ s2)
+{
+	char*			ret;
+	unsigned int	size = strlen(s1) + strlen(s2);
+	unsigned int	j = 0;
+
+	ret = malloc((size + 1) * sizeof(char*));
+	if (!ret)
+		return (NULL);
+	for (int i = 0 ; s1[i] ; ++i)
+		ret[j++] = s1[i];
+	for (int i = 0 ; s2[i] ; ++i)
+		ret[j++] = s2[i];
+	ret[size] = '\0';
+	return (ret);
+}
+
+char*
+hopt_strvajoin(unsigned int count, ...)
+{
+	char*			ret;
+	unsigned int	size = 0;
+	unsigned int 	at = 0;
+
+	va_list	va;
+	va_start(va, count);
+	for (unsigned int i = 0 ; i < count ; ++i)
+		size += strlen(va_arg(va, char*));
+	va_end(va);
+
+	ret = malloc((size + 1) * sizeof(char*));
+	if (!ret)
+		return (NULL);
+	ret[size] = '\0';
+
+	va_start(va, count);
+	for (unsigned int i = 0 ; i < count ; ++i)
+	{
+		char*			tmp = va_arg(va, char*);
+		memcpy(&ret[at], tmp, strlen(tmp));
+		at += strlen(tmp);
+	}
+	va_end(va);
+	return (ret);
+}
+
+char*
 hopt_strndup(const char* __restrict__ s, unsigned int n)
 {
 	char*	ret;

@@ -30,15 +30,6 @@ char			hopt_cerr[16] = {0};// extern global var in 'hopt.h'
 
 t_hopt_state	hopt_state = {0};
 
-//BOOL			hopt_end_on_arg_v = FALSE;	// Capabilities of HOPT
-//BOOL			hopt_undef_allowed = FALSE;	// Capabilities of HOPT
-//BOOL			hopt_redef_allowed = FALSE;	// Capabilities of HOPT
-//BOOL			hopt_redef_overwrt = FALSE;	// Capabilities of HOPT
-//void**			hopt_mallocd		= NULL;	// Store all addresses malloc'd
-//unsigned int	hopt_c_mallocd		= 0U;		// Count addresses malloc'd
-//t_hopt_map*		hopt_maps[HOPT_MAX_OPTIONS] = {0};	// extern global var in '__hopt_.h'
-//unsigned int	hopt_c_maps = 0;					// extern global var in '__hopt_.h'
-
 // Parse and interpret options for you :0
 // Call HOPT_ADD_OPTION(...) for each option before
 //
@@ -64,15 +55,24 @@ hopt(int ac, char** av)
 
 static inline
 t_hopt_map*
-hopt_create_map(char* names, int argc, void* mem, va_list va)
+hopt_create_map(char* names, int argc, int flag, va_list va)
 {
 	t_hopt_map* map = malloc(sizeof(t_hopt_map));
+	if (!map)
+		return (NULL); //! fatal error
 	map->names = names;
 	map->argc = argc;
-	map->mem = mem;
-	map->type = HOPT_TYPE_STR;
-	if (argc >= 1)
-		map->type = va_arg(va, unsigned int);
+	map->flag = flag;
+	if (flag >= HOPT_TYPE_DEFAULT && flag <= HOPT_TYPE_LAST)
+	{
+		map->mem = va_arg(va, void*);
+	}
+	else if (flag == HOPT_FLCB)
+	{
+		map->mem = NULL;
+		map->cb = va_arg(va, t_hopt_callback);
+		map->cb_arg = va_arg(va, void*);
+	}
 	return (map);
 }
 
@@ -83,16 +83,11 @@ hopt_create_map(char* names, int argc, void* mem, va_list va)
 // @param mem Address in memory to fill
 // @param ... Type of each option's argument(s)
 int
-hopt_add_option(char* names, int argc, void* mem, ...)
+hopt_add_option(char* names, int argc, int flag, ...)
 {
-#ifdef HOPT_DEBUG
-	for (unsigned int i = 0 ; names[i] ; ++i)
-		if (!isalnum(names[i]) && names[i] != '=' && names[i] != '-')
-			return (-1);
-#endif
 	va_list	va;
-	va_start(va, mem);
-	hopt_maps[hopt_c_maps] = hopt_create_map(names, argc, mem, va);
+	va_start(va, flag);
+	hopt_maps[hopt_c_maps] = hopt_create_map(names, argc, flag, va);
 	++hopt_c_maps;
 	va_end(va);
 	return (0);
@@ -101,16 +96,6 @@ hopt_add_option(char* names, int argc, void* mem, ...)
 void
 hopt_free(void)
 {
-	if (hopt_mallocd)
-	{
-		for (unsigned int i = 0 ; i < hopt_c_mallocd ; ++i)
-		{
-			free(hopt_mallocd[i]);
-			hopt_mallocd[i] = NULL;
-		}
-		free(hopt_mallocd);
-		hopt_mallocd = NULL;
-	}
 	for (unsigned int i = 0 ; i < hopt_c_maps ; ++i)
 	{
 		free(hopt_maps[i]);
@@ -161,6 +146,11 @@ hopt_strerror(void)
 			test = malloc((33 + size + 1) * sizeof(char));
 			snprintf(test, 33 + size, "hopt: option -%s miss argument(s).", hopt_cerr);
 			test[33 + size] = 0;
+			return (test);
+		case HOPT_CBERROR:
+			test = malloc((42 + size + 1) * sizeof(char));
+			snprintf(test, 42 + size, "hopt: intern callback error with option %s.", hopt_cerr);
+			test[42 + size] = 0;
 			return (test);
 		default:
 			test = malloc((15 + 1) * sizeof(char));

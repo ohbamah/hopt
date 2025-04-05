@@ -80,7 +80,7 @@ Obviously, it has more features than argp and you have control over what you do.
 
 With HOPT, you can customize everything while keeping extreme control over option management.
 
-| Features                         | HOPT     | ARGP     | GETOPT |
+| Features                        | HOPT     | ARGP     | GETOPT |
 | :------------------------------ | :------- | :--------| :----- |
 | Parse program options           | ​✅       | ✅       | ✅     |
 | Parse option arguments          | ​✅       | ✅       | ❌     |
@@ -90,9 +90,9 @@ With HOPT, you can customize everything while keeping extreme control over optio
 | Advanced logic support          | ​✅       | ​✅       | ❌     |
 | Returns error codes             | ​✅       | ​✅       | ​✅     |
 | Supports short and long options | ​✅       | ​✅       | ​✅     |
-| Supports callbacks              | ❌       | ​✅       | ❌     |
+| Supports callbacks              | ​✅       | ​✅       | ❌     |
 | Custom help menu setup          | ​✅       | ❌       | ❌     |
-| Auto-generated help menu        | ❌       | ​✅       | ❌     |
+| Auto-generated help menu        | ​✅       | ​✅       | ❌     |
 | Automatic error handling        | ❌       | ​✅       | ❌     |
 
 

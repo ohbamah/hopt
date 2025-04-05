@@ -97,75 +97,75 @@ static inline
 void
 FINDER_WRITE_TYPE(t_hopt* restrict h, unsigned int /*av index*/ idx, unsigned int j, unsigned int opt_idx)
 {
-	char* dup = strdup(h->av[idx]);	// Store in hopt_mallocd [old "hopt_addrs"]
-	if (hopt_maps[opt_idx]->type == HOPT_TYPE_STR)
+	char* dup = h->av[idx];
+	long long	at = 0LL;
+	double		ad = 0.0;
+	switch (hopt_maps[opt_idx]->flag)
 	{
-		hopt_mallocd[hopt_c_mallocd + j] = dup;
-		memcpy(hopt_maps[opt_idx]->mem + j * sizeof(char*), &dup, sizeof(char*));
+		case HOPT_TYPE_STR:
+			memcpy(hopt_maps[opt_idx]->mem + j * sizeof(char*), &dup, sizeof(char*));
+			break;
+		case HOPT_TYPE_CHAR:
+			at = atoi(dup);
+			*((char*)(hopt_maps[opt_idx]->mem) + j) = (char)at;
+			break;
+		case HOPT_TYPE_SHORT:
+			at = atoi(dup);
+			*((short*)(hopt_maps[opt_idx]->mem) + j) = (short)at;
+			break;
+		case HOPT_TYPE_INT:
+			at = atoi(dup);
+			*((int*)(hopt_maps[opt_idx]->mem) + j) = (int)at;
+			break;
+		case HOPT_TYPE_LONG:
+			at = atoll(dup);
+			*((long long*)(hopt_maps[opt_idx]->mem) + j) = at;
+			break;
+		case HOPT_TYPE_FLOAT:
+			ad = (float)atof(dup);
+			*((float*)(hopt_maps[opt_idx]->mem) + j) = (float)ad;
+			break;
+		case HOPT_TYPE_DOUBLE:
+			ad = (double)atof(dup);
+			*((double*)(hopt_maps[opt_idx]->mem) + j) = ad;
+			break;
 	}
-	else if (hopt_maps[opt_idx]->type == HOPT_TYPE_CHAR)
-	{
-		char	at = atoi(dup);
-		*((char*)(hopt_maps[opt_idx]->mem) + j) = at;
-	}
-	else if (hopt_maps[opt_idx]->type == HOPT_TYPE_SHORT)
-	{
-		short	at = atoi(dup);
-		*((short*)(hopt_maps[opt_idx]->mem) + j) = at;
-	}
-	else if (hopt_maps[opt_idx]->type == HOPT_TYPE_INT)
-	{
-		int	at = atoi(dup);
-		*((int*)(hopt_maps[opt_idx]->mem) + j) = at;
-	}
-	else if (hopt_maps[opt_idx]->type == HOPT_TYPE_LONG)
-	{
-		long long	all = atoll(dup);
-		*((long long*)(hopt_maps[opt_idx]->mem) + j) = all;
-	}
-	else if (hopt_maps[opt_idx]->type == HOPT_TYPE_FLOAT)
-	{
-		float	af = (float)atof(dup);
-		*((float*)(hopt_maps[opt_idx]->mem) + j) = af;
-	}
-	else if (hopt_maps[opt_idx]->type == HOPT_TYPE_DOUBLE)
-	{
-		double	af = atoi(dup);
-		*((double*)(hopt_maps[opt_idx]->mem) + j) = af;
-	}
-	if (hopt_maps[opt_idx]->type != HOPT_TYPE_STR)
-		free(dup);
 }
 
 static
-unsigned int
-FINDER_WRITE(t_hopt* restrict h, unsigned int /*av index*/ idx, unsigned int /*av[idx] index*/ c, unsigned int opt_idx)
+int
+FINDER_WRITE(t_hopt* restrict h, unsigned int /*av index*/ idx, unsigned int /*av[idx] index*/ c, unsigned int opt_idx, unsigned int __j)
 {
 	unsigned int	j 			= 0;
 	unsigned int	tmp 		= idx;
 
-	if (h->oac > 0)
+	if (hopt_maps[opt_idx]->flag != HOPT_FLCB)
 	{
-		if (hopt_maps[opt_idx]->type == HOPT_TYPE_STR)
-			hopt_mallocd = realloc(hopt_mallocd, (hopt_c_mallocd + h->oac) * sizeof(void*));
-		++idx;
-		while (h->av[idx] && j < h->oac)
+		if (h->oac > 0)
 		{
-
-			if ((!h->av[idx + 1] && j < h->oac - 1U) || (h->av[idx][0] == '-' && strnlen(h->av[idx], 2) > 1 && !isdigit(h->av[idx][1])))
-				FINDER_ERROR(h, HOPT_MISSOARGC, tmp, c);
-			FINDER_WRITE_TYPE(h, idx, j, opt_idx);
-			++j;
 			++idx;
-			++h->f.addrs_idx;
-			++h->n_parsed;
+			if (!h->av[idx])
+				FINDER_ERROR(h, HOPT_MISSOARGC, idx - 1, __j);
+			while (h->av[idx] && j < h->oac)
+			{
+				if ((!h->av[idx + 1] && j < h->oac - 1U) || (h->av[idx][0] == '-' && strnlen(h->av[idx], 2) > 1 && !isdigit(h->av[idx][1])))
+					FINDER_ERROR(h, HOPT_MISSOARGC, tmp, c);
+				FINDER_WRITE_TYPE(h, idx, j, opt_idx);
+				++j;
+				++idx;
+				++h->f.addrs_idx;
+				++h->n_parsed;
+			}
+			--idx;
 		}
-		--idx;
-		if (hopt_maps[opt_idx]->type == HOPT_TYPE_STR)
-			hopt_c_mallocd += j;
+		else
+			++(*((BOOL*)hopt_maps[opt_idx]->mem));
 	}
 	else
-		++(*((BOOL*)hopt_maps[opt_idx]->mem));
+	{
+		if ((hopt_maps[opt_idx]->cb)(h->oac, &h->av[idx], hopt_maps[opt_idx]->cb_arg) == -1)
+			return (-1);
+	}
 	return (idx);
 }
 
@@ -211,8 +211,14 @@ FINDER(t_hopt* restrict h)
 							h->f.last_i = i;
 							if (h->f.strso == FALSE && !strcmp(&h->av[i][1], alias[m]))
 							{
+								int	tmp_i = i;
 								if (h->flags[n] == FALSE || (hopt_redef_allowed == TRUE && hopt_redef_overwrt == TRUE))
-									i = FINDER_WRITE(h, i, 1, n);
+								{
+									tmp_i = FINDER_WRITE(h, i, 1, n, j);
+									if (tmp_i == -1)
+										FINDER_ERROR(h, HOPT_CBERROR, i, j);
+									i = (unsigned int)tmp_i;
+								}
 								if (h->flags[n] == FALSE)
 									++h->n_parsed;
 								h->f.found = TRUE;
@@ -223,7 +229,8 @@ FINDER(t_hopt* restrict h)
 								if (h->oac > 0 && h->av[i][j + 1] != '\0')
 									FINDER_ERROR(h, HOPT_BADSORDER, i, j);
 								if (h->flags[n] == FALSE || (hopt_redef_allowed == TRUE && hopt_redef_overwrt == TRUE))
-									FINDER_WRITE(h, i, j, n);
+									if (FINDER_WRITE(h, i, j, n, j) == -1)
+										FINDER_ERROR(h, HOPT_CBERROR, i, j);
 								if (h->flags[n] == FALSE && j == 1)
 									++h->n_parsed;
 								if (h->av[i][j + 1] == '\0')
@@ -239,15 +246,7 @@ FINDER(t_hopt* restrict h)
 					if (h->f.found == TRUE && h->f.error == FALSE && (h->flags[n] == FALSE || (hopt_redef_allowed == TRUE && hopt_redef_overwrt == TRUE && h->flags[n] == TRUE)))
 					{
 						if (hopt_disable_sort_v == FALSE)
-						{
-							if (h->f.head == NULL)
-							{
-								h->f.head = hopt_new_node(h->f.last_i, h->oac);
-								h->f.last_node = h->f.head;
-							}
-							else
-								hopt_add_back(&h->f.last_node, hopt_new_node(h->f.last_i, h->oac));
-						}
+							hopt_add_back(&h->f.head, hopt_new_node(h->f.last_i, h->oac));
 						h->flags[n] = TRUE;
 					}
 					free(alias);

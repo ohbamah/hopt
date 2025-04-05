@@ -35,6 +35,7 @@
 # define HOPT_BADSORDER	5
 # define HOPT_BADOPTSTR	6
 # define HOPT_MISSOARGC	7
+# define HOPT_CBERROR	8
 
 # ifndef HOPT_MAX_OPTIONS
 // modifiable
@@ -49,13 +50,20 @@
 # define HOPT_TYPE_LONG		4
 # define HOPT_TYPE_FLOAT	5
 # define HOPT_TYPE_DOUBLE	6
+# define HOPT_TYPE_LAST		6
+
+# define HOPT_FLCB			7
+
+typedef int (*t_hopt_callback)(int, char**, void*); //ac, av, cb_arg
 
 typedef struct hopt_map
 {
-	char*	names;
-	int		argc;
-	void*	mem;
-	int		type;
+	char*			names;
+	int				argc;
+	void*			mem;
+	int				flag;
+	t_hopt_callback	cb;
+	void*			cb_arg;
 }	t_hopt_map;
 
 //void hopt_early_exit(BOOL (*fun)(char* option, int optlen));
@@ -83,9 +91,13 @@ void	hopt_free(void);
 //
 // @param name Option aliases (ex: "c=-count=j"), option '-c' has 2 others alises : '--count' and '-j'
 // @param argc Count of option's arguments
-// @param mem Address in memory to fill
+// @param flag HOPT flag
 // @param ... Type of each option's argument(s)
-int		hopt_add_option(char* names, int argc, void* mem, ...);
+//
+// - if (flag == HOPT_TYPE_*):	Address in memory to fill (void*)
+//
+// - if (flag == HOPT_FLCB):	A callback function and his argument (t_hopt_callback, void*)
+int		hopt_add_option(char* names, int argc, int flag, ...);
 
 	/*
 		UTILS for HOPT

@@ -63,7 +63,6 @@ typedef struct FINDER
 	BOOL			strso;		// Know if is a STRing of Shorts Options
 	unsigned int	last_i;		// Last index, to know the begin position of an option with argument(s)
 	t_hopt_sort*	head;
-	t_hopt_sort*	last_node;
 	unsigned int	addrs_idx;
 }	t_FINDER;
 

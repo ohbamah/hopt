@@ -98,6 +98,8 @@ With HOPT, you can customize everything while keeping extreme control over optio
 
 ## Usage/Examples
 
+This is short exemple, but you can have a look at benchmark/hopt_usage.c for a more complexe usage of HOPT.
+
 ```c
 #include <hopt.h>
 #include <stdio.h>

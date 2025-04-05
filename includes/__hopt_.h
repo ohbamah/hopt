@@ -31,8 +31,16 @@
 # include <string.h>
 # include <ctype.h>
 # include <stdarg.h>
-# include <libgen.h>
 # include "hopt.h"
+
+# ifndef _WIN32
+#  ifndef _WIN64
+#   include <libgen.h>
+#   define hopt_restrict __restrict__
+#  endif
+# else
+#  define hopt_restrict	restrict
+# endif
 
 # define BOOL	char
 # define TRUE	1
@@ -108,17 +116,20 @@ void			hopt_add_back(t_hopt_sort** head, t_hopt_sort* node);
 void			hopt_free_lstsort(t_hopt_sort* head);
 
 // utils.c
-char**			strsplit(const char* restrict s, char sep);
+char**			strsplit(const char* hopt_restrict s, char sep);
 void			free2(void**  ptr2);
-unsigned int	strlen2(char* restrict* restrict s);
+unsigned int	strlen2(char* hopt_restrict* hopt_restrict s);
 char*			hopt_strvajoin(unsigned int count, ...);
-char*			hopt_strjoin(const char* __restrict__ s1, const char* __restrict__ s2);
+char*			hopt_strjoin(const char* hopt_restrict s1, const char* hopt_restrict s2);
+# if defined(_WIN32) || defined(_WIN64)
+char*			basename(const char* hopt_restrict path);
+# endif
 
 // core.c
 int
 SORT(int ac, /*const*/ char** av, t_hopt_sort* head);
 void
-FINDER(t_hopt* restrict h);
+FINDER(t_hopt* hopt_restrict h);
 void
 hopt_generate_help_menu(void);
 

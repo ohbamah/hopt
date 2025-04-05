@@ -25,7 +25,7 @@
 #include "__hopt_.h"
 
 unsigned int
-strclen(const char* restrict s, char sep)
+strclen(const char* hopt_restrict s, char sep)
 {
 	unsigned int	i = 0;
 	while (s[i] && s[i] != sep)
@@ -34,7 +34,7 @@ strclen(const char* restrict s, char sep)
 }
 
 int
-count_string(const char* restrict s, char sep)
+count_string(const char* hopt_restrict s, char sep)
 {
 	int	count = 0;
 	for (unsigned int i = 0 ; s[i] ; ++i)
@@ -44,7 +44,7 @@ count_string(const char* restrict s, char sep)
 }
 
 char*
-hopt_strjoin(const char* __restrict__ s1, const char* __restrict__ s2)
+hopt_strjoin(const char* hopt_restrict s1, const char* hopt_restrict s2)
 {
 	char*			ret;
 	unsigned int	size = strlen(s1) + strlen(s2);
@@ -91,7 +91,7 @@ hopt_strvajoin(unsigned int count, ...)
 }
 
 char*
-hopt_strndup(const char* __restrict__ s, unsigned int n)
+hopt_strndup(const char* hopt_restrict s, unsigned int n)
 {
 	char*	ret;
 
@@ -104,7 +104,7 @@ hopt_strndup(const char* __restrict__ s, unsigned int n)
 }
 
 char**
-strsplit(const char* restrict s, char sep)
+strsplit(const char* hopt_restrict s, char sep)
 {
 	if (!s)
 		return (NULL);
@@ -137,8 +137,20 @@ strsplit(const char* restrict s, char sep)
 	return (ret);
 }
 
+# if defined(_WIN32) || defined(_WIN64)
+char*
+basename(const char* hopt_restrict path)
+{
+	char*	basename = strrchr(path, '/');
+
+	if (basename == NULL)
+		return ((char*)path);
+	return (basename + 1);
+}
+# endif
+
 unsigned int
-strlen2(char* restrict* restrict s)
+strlen2(char* hopt_restrict* hopt_restrict s)
 {
 	unsigned int	i = 0;
 	while (s[i])

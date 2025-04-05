@@ -54,7 +54,7 @@ SRCS =	../srcs/hopt.c \
 		../srcs/utils.c \
 		../srcs/core.c
 
-OBJS_DIR = ../.objs
+OBJS_DIR = .objs
 
 OBJS = $(SRCS:%.c=$(OBJS_DIR)/%.obj)
 

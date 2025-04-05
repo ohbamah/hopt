@@ -77,7 +77,7 @@ SORT(int ac, /*const*/ char** av, t_hopt_sort* head)
 
 static inline
 void
-FINDER_ERROR(t_hopt* restrict h, int errcode, unsigned int i, int j)
+FINDER_ERROR(t_hopt* hopt_restrict h, int errcode, unsigned int i, int j)
 {
 	memset(&hopt_cerr, 0, sizeof(hopt_cerr));
 	h->f.error = TRUE;
@@ -97,7 +97,7 @@ FINDER_ERROR(t_hopt* restrict h, int errcode, unsigned int i, int j)
 
 static inline
 void
-FINDER_WRITE_TYPE(t_hopt* restrict h, unsigned int /*av index*/ idx, unsigned int j, unsigned int opt_idx)
+FINDER_WRITE_TYPE(t_hopt* hopt_restrict h, unsigned int /*av index*/ idx, unsigned int j, unsigned int opt_idx)
 {
 	char* dup = h->av[idx];
 	long long	at = 0LL;
@@ -136,7 +136,7 @@ FINDER_WRITE_TYPE(t_hopt* restrict h, unsigned int /*av index*/ idx, unsigned in
 
 static
 int
-FINDER_WRITE(t_hopt* restrict h, unsigned int /*av index*/ idx, unsigned int /*av[idx] index*/ c, unsigned int opt_idx, unsigned int __j)
+FINDER_WRITE(t_hopt* hopt_restrict h, unsigned int /*av index*/ idx, unsigned int /*av[idx] index*/ c, unsigned int opt_idx, unsigned int __j)
 {
 	unsigned int	j 			= 0;
 	unsigned int	tmp 		= idx;
@@ -172,7 +172,7 @@ FINDER_WRITE(t_hopt* restrict h, unsigned int /*av index*/ idx, unsigned int /*a
 }
 
 void
-FINDER(t_hopt* restrict h)
+FINDER(t_hopt* hopt_restrict h)
 {
 	unsigned int	i;
 	int				j;

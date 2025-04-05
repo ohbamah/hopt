@@ -74,23 +74,20 @@ all: $(NAME)
 
 $(NAME): $(OBJS)
 	$(AR) $(OBJS) /OUT:$(NAME)
-	@echo "$(BOLD)$(CYAN)Librairie $(NAME) créé avec succès!$(CLASSIC)"
+	@echo "Librairie $(NAME) créé avec succès!"
 
 $(OBJS_DIR)/%.obj: %.c
 	@if not exist "$(dir $@)" mkdir "$(dir $@)"
-	@echo "$(GREEN)🗸 Compilation $(BOLD)$(YELLOW)$<$(CLASSIC)"
+	@echo "🗸 Compilation $<"
 	$(CC) $(INCLUDES) $(CFLAGS) -c $< -o $@
 
 clean:
-	@echo "$(BOLD)$(RED)"
 	rm $(OBJS_DIR) -rf
-	@echo "$(CLASSIC)"
 
 fclean: clean
-	@echo "$(BOLD)$(RED)"
 	rm $(LIBNAME) -f
 	rm $(NAME) -f
-	@echo "$(BOLD)$(GREEN)Tout a été supprimé... 🗑️\n$(CLASSIC)"
+	@echo "Tout a été supprimé... 🗑️\n"
 
 re: fclean all
 

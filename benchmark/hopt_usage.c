@@ -51,7 +51,8 @@ int	main(int ac, char** av)
 	hopt_add_option("f=-flood=l",	0, 0,				&options.flood,	"Flood network");
 	hopt_add_option("-test",		4, HOPT_TYPE_STR,	&options.test,	NULL);
 	hopt_add_option("p=-pid=-pids",	6, HOPT_TYPE_INT,	&options.pids,	"Pid processes to kill");
-	hopt_add_option("n=-name",		1, HOPT_TYPE_STR,	&options.name,	"");//cbtest, &options);
+	hopt_add_option("n=-name",		1, HOPT_TYPE_STR,	&options.name,	"");
+	hopt_add_option("b=-callback", 1, HOPT_FLCB, cbtest, &options); // With flag HOPT_FLCB it will call 'cbtest(1, "-b ..."/"--callback ...", &options)'
 	hopt(ac, av);
 	//printf("%s\n", hopt_help_menu());
 	hopt_free();

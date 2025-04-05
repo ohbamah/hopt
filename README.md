@@ -21,7 +21,7 @@ To copy HOPT to the include path (do it in the repo cloned AND need to be root):
 To install repository:
 
 ```bash
-  brew install -y git clang make
+  brew install git clang make
   git clone git@github.com:ohbamah/hopt.git && (cd ./hopt/ && rm -rf ./tests/ ; rm -rf ./benchmark/ ; make)
 ```
 

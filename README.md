@@ -25,25 +25,28 @@ To install repository:
   git clone git@github.com:ohbamah/hopt.git && (cd ./hopt/ && rm -rf ./tests/ ; rm -rf ./benchmark/ ; make)
 ```
 
-To copy HOPT to the include path (do it in the repo cloned AND need to be root):
+To copy HOPT to the include path (do it in the repo cloned):
 
 ```bash
-#Mettre les commandes
+  sudo mkdir -p /usr/local/lib/
+  sudo cp ./libhopt.a /usr/local/lib/
+  sudo mkdir -p /usr/local/include/
+  sudo cp ./includes/hopt.h /usr/local/inlude/
 ```
 
 ### Windows 10/11
 
-To install repository:
+To install repository and requirements (in the releases section):
 
-```bash
-#Mettre les commandes
-```
+- Download the latest-stable version in the repo github page releases section.
+- Run .\WindowsHOPT\1-ChocoInstall.bat | To install Chocolatey.
+- Run .\WindowsHOPT\2-Requirements.bat | To install git, clang and make.
+- Go to the directory where you want to have the repo and run .\WindowsHOPT\3-CloneGit.bat | To clone repo.
 
-To copy HOPT to the include path (do it in the repo cloned AND need to be root):
+To copy HOPT to the include Clang/LLVM path (not working with MSVC):
 
-```bash
-#Mettre les commandes
-```
+- Run .\WindowsHOPT\4-LLVMPATH.bat
+
 
 ## FAQ
 
@@ -79,6 +82,43 @@ With HOPT, you can customize everything while keeping extreme control over optio
 | Custom help menu setup          | ​✅       | ❌       | ❌     |
 | Auto-generated help menu        | ❌       | ​✅       | ❌     |
 | Automatic error handling        | ❌       | ​✅       | ❌     |
+
+
+## Usage/Examples
+
+```c
+#include <hopt.h>
+#include <stdio.h>
+#include <stdlib.h>
+
+int main(int ac, char** av)
+{
+    hopt_allow_undef(); // Allow undefined options
+    hopt_allow_redef(TRUE); // Allow options redefinition (with overwriting or not)
+    hopt_end_on_arg(); // End parsing while a non-option argument appears
+    hopt_disable_sort(); // Disable AV sorting
+
+    hopt_reset(); // Reset all features (redef/undef/...)
+    int count = hopt(ac, av); // Main function
+    if (count == -1)
+    {
+        char*   error = hopt_strerror();
+        printf("%s\n", error);
+        free(error);
+        /*
+            Handling errors
+        */
+        return (1);
+    }
+    ac -= count;
+    av += count; // If count != 1, count will be equal to the number of arguments (which are options) to be skipped. Useful only if 'hopt_disable_sort()' has not been called.
+    /*
+        Rest of the program...
+    */
+    return (0);
+}
+```
+
 
 ## Authors
 

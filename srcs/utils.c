@@ -43,6 +43,19 @@ count_string(const char* restrict s, char sep)
 	return (count);
 }
 
+char*
+hopt_strndup(const char* __restrict__ s, unsigned int n)
+{
+	char*	ret;
+
+	ret = malloc((n + 1) * sizeof(char));
+	if (!ret)
+		return (NULL);
+	memcpy(ret, s, n);
+	ret[n] = '\0';
+	return (ret);
+}
+
 char**
 strsplit(const char* restrict s, char sep)
 {
@@ -64,7 +77,7 @@ strsplit(const char* restrict s, char sep)
 		size = strclen(&s[i], sep);
 		if (size > 0)
 		{
-			ret[j] = strndup(&s[i], size);
+			ret[j] = hopt_strndup(&s[i], size);
 			//printf("ret[j] = %s (%d bytes)\n", ret[j], size);
 			if (ret[j] == NULL)
 				return (NULL);

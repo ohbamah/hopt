@@ -11,6 +11,7 @@ typedef struct opt
 			char*	test[4];
 			int		pids[6];
 			char*	name;
+			char*	cb;
 }	t_opt;
 
 unsigned long
@@ -21,13 +22,10 @@ microsecond(struct timeval* __restrict__ tv)
 
 int	cbtest(int ac, char** av, void* arg)
 {
-	printf("ac : %d\n", ac);
-	for (int i = 0 ; i < ac ; ++i)
-		printf("av[%d] = %s\n", i, av[i]);
-	if (!strcmp(av[0], "-n") || !strcmp(av[0], "--name"))
+	if (!strcmp(av[0], "-b") || !strcmp(av[0], "--callback"))
 	{
-		printf("Option -n=--name found!\n");
-		((t_opt*)arg)->name = "FOUND";
+		printf("Option -b=--callback found!\n");
+		((t_opt*)arg)->cb = av[1];
 	}
 	return (0);
 }
@@ -52,7 +50,7 @@ int	main(int ac, char** av)
 	hopt_add_option("-test",		4, HOPT_TYPE_STR,	&options.test,	NULL);
 	hopt_add_option("p=-pid=-pids",	6, HOPT_TYPE_INT,	&options.pids,	"Pid processes to kill");
 	hopt_add_option("n=-name",		1, HOPT_TYPE_STR,	&options.name,	"");
-	hopt_add_option("b=-callback", 1, HOPT_FLCB, cbtest, &options); // With flag HOPT_FLCB it will call 'cbtest(1, "-b ..."/"--callback ...", &options)'
+	hopt_add_option("b=-callback",  1, HOPT_FLCB,		cbtest, &options,    "Just testing callback"); // With flag HOPT_FLCB it will call 'cbtest(1, "-b ..."/"--callback ...", &options)'
 	hopt(ac, av);
 	//printf("%s\n", hopt_help_menu());
 	hopt_free();

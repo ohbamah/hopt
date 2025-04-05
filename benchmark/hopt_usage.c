@@ -27,7 +27,7 @@ int	main(int ac, char** av)
 	t_opt	options = {0};
 
 	//hopt_allow_redef(FALSE/TRUE);	//? Allow options redefinition (with overwriting or not)	[default: FALSE(FALSE)]
-	//hopt_allow_undef();			//? Allow options undefined									[default: FALSE]
+	//hopt_allow_undef();			//? 
 	//hopt_end_on_arg();			//? End parsing while a non-option argument appears			[default: FALSE]
 	//hopt_disable_sort();			//? Disable AV sorting										[default: FALSE]
 	//hopt_reset();					//? Reset all HOPT functionnalities (allow redef/undef and end_on_arg)

@@ -63,7 +63,7 @@ To copy HOPT to the include Clang/LLVM path (not working with MSVC):
 ## FAQ
 
 #### Is HOPT more faster than argp ?
-Yes it is twice as fast as argp on average.
+Yes it is a little faster than argp on average.
 
 #### Is HOPT easier to use than argp ?
 Of course we do! I will let you have a look at the DEMO.

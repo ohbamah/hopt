@@ -66,13 +66,10 @@ To copy HOPT to the include Clang/LLVM path (not working with MSVC):
 Yes it is a little faster than argp on average.
 
 #### Is HOPT easier to use than argp ?
-Of course we do! I will let you have a look at the DEMO.
+Of course! Just take a look at the "Usage/Examples" section below.
 
-#### Is HOPT compatible in different OS ?
+#### Is HOPT compatible with different OS ?
 The library follows the POSIX standard, so in theory it will be compatible with at least Windows 10/11, Linux and MacOS.
-
-#### Does HOPT have many useful features ?
-Obviously, it has more features than argp and you have control over what you do.
 
 ## Comparison with ARGP
 

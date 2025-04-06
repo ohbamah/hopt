@@ -9,7 +9,7 @@ To install requirements and repository:
   git clone https://github.com/ohbamah/hopt.git
 ```
 
-To copy HOPT to the include path (do it in the repo cloned AND need to be root):
+To copy HOPT to the include path (Make sure you have root access and run this from the root of the repo):
 
 ```bash
   sudo cp ./libhopt.a /lib/ || sudo cp ./libhopt.a /usr/lib/
@@ -31,7 +31,7 @@ To install requirements and repository:
   git clone https://github.com/ohbamah/hopt.git
 ```
 
-To copy HOPT to the include path (do it in the repo cloned):
+To copy HOPT to the include path (Make sure you have root access and run this from the root of the repo):
 
 ```bash
   sudo mkdir -p /usr/local/lib/
@@ -143,6 +143,11 @@ int main(int ac, char** av)
 }
 ```
 
+
+##Todo:
+
+- Make option assignment functional as such: --name=“My name is Claude”.
+- Check wether the option argument is the right type to generate the appropriate error.
 
 ## Authors
 

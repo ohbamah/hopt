@@ -145,7 +145,6 @@ int main(int ac, char** av)
 
 ## Todo:
 
-- Make option assignment functional as such: --name=“My name is Claude”.
 - Check wether the option argument is the right type to generate the appropriate error.
 - Handle type wrapper like IPv4, IPv6, numeric range, file, ...
 

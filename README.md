@@ -12,7 +12,7 @@ To install requirements and repository:
 To copy HOPT to the include path (do it in the repo cloned AND need to be root):
 
 ```bash
-  sudo cp ./libhopt.a /lib/ || cp ./libhopt.a /usr/lib/
+  sudo cp ./libhopt.a /lib/ || sudo cp ./libhopt.a /usr/lib/
   sudo cp ./includes/hopt.h /usr/include/
 ```
 

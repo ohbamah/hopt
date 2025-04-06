@@ -33,13 +33,19 @@
 # include <stdarg.h>
 # include "hopt.h"
 
-# ifndef _WIN32
-#  ifndef _WIN64
-#   include <libgen.h>
-#   define hopt_restrict __restrict__
-#  endif
-# else
+# ifdef _MSC_VER
+#  define hopt_restrict	__restrict
+# elif defined(__GNUC__) || defined(__clang__)
+#  define hopt_restrict	__restrict__
+# elif defined(__INTEL_COMPILER)
 #  define hopt_restrict	restrict
+# else
+#  define hopt_restrict
+# endif
+
+# if defined(__unix__) || defined(__APPLE__) || defined(__linux__)
+#  define _HOPT_LIBGEN_COMPABILITY
+#  include <libgen.h>
 # endif
 
 # define BOOL	char
@@ -54,11 +60,12 @@
 # define hopt_redef_overwrt		hopt_state._hopt_redef_overwrt
 # define hopt_disable_sort_v	hopt_state._hopt_disable_sort_v
 # define hopt_auto_help_v		hopt_state._hopt_auto_help_v
-# define hopt_256termcolor_v	hopt_state._hopt_256termcolor_v
+# define hopt_256termcolor_v	hopt_state._hopt_256termcolor_v	// not working yet
 # define hopt_maps				hopt_state._hopt_maps
 # define hopt_c_maps			hopt_state._hopt_c_maps
+# define hopt_c_mandatory		hopt_state._hopt_c_mandatory	// Count of mandatory option
 # define hopt_help_menu_str		hopt_state._hopt_help_menu_str
-# define hopt_program_name		hopt_state._hopt_program_name
+# define hopt_program_path		hopt_state._hopt_program_path
 # define hopt_program_desc		hopt_state._hopt_program_desc
 
 typedef struct hopt_sort
@@ -76,6 +83,7 @@ typedef struct FINDER
 	unsigned int	last_i;		// Last index, to know the begin position of an option with argument(s)
 	t_hopt_sort*	head;
 	unsigned int	addrs_idx;
+	unsigned int	mandatory_count;	// Follow the count of mandatory option
 }	t_FINDER;
 
 typedef struct hopt_state
@@ -89,11 +97,11 @@ typedef struct hopt_state
 	BOOL			_hopt_auto_help_v;
 	BOOL			_hopt_256termcolor_v;
 	char*			_hopt_help_menu_str;
-	char*			_hopt_program_name;
+	char*			_hopt_program_path;
 	char*			_hopt_program_desc;
 	t_hopt_map*		_hopt_maps[HOPT_MAX_OPTIONS];
 	unsigned int	_hopt_c_maps;
-	//char*			_hopt_help_str		= NULL;	// !WORK IN PROGRESS!
+	unsigned int	_hopt_c_mandatory;
 }	t_hopt_state;
 
 typedef struct hopt
@@ -121,7 +129,7 @@ void			free2(void**  ptr2);
 unsigned int	strlen2(char* hopt_restrict* hopt_restrict s);
 char*			hopt_strvajoin(unsigned int count, ...);
 char*			hopt_strjoin(const char* hopt_restrict s1, const char* hopt_restrict s2);
-# if defined(_WIN32) || defined(_WIN64)
+# ifndef _HOPT_LIBGEN_COMPABILITY
 char*			basename(const char* hopt_restrict path);
 # endif
 
@@ -131,6 +139,8 @@ SORT(int ac, /*const*/ char** av, t_hopt_sort* head);
 void
 FINDER(t_hopt* hopt_restrict h);
 void
-hopt_generate_help_menu(void);
+__hopt_generate_help_menu(void);
+void
+__hopt_find_missing_mandatory(t_hopt* hopt_restrict h);
 
 #endif

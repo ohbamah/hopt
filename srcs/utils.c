@@ -137,7 +137,7 @@ strsplit(const char* hopt_restrict s, char sep)
 	return (ret);
 }
 
-# if defined(_WIN32) || defined(_WIN64)
+# ifndef _HOPT_LIBGEN_COMPABILITY
 char*
 basename(const char* hopt_restrict path)
 {

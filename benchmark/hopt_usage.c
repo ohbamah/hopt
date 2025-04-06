@@ -52,7 +52,7 @@ int	main(int ac, char** av)
 	hopt_add_option("n=-name",		1, HOPT_TYPE_STR,	&options.name,	"");
 	hopt_add_option("b=-callback",  1, HOPT_FLCB,		cbtest, &options,    "Just testing callback"); // With flag HOPT_FLCB it will call 'cbtest(1, "-b ..."/"--callback ...", &options)'
 	hopt(ac, av);
-	//printf("%s\n", hopt_help_menu());
+	printf("%s\n", hopt_help_menu());
 	hopt_free();
 
 	gettimeofday(&tv, NULL);

@@ -31,7 +31,7 @@ char			hopt_cerr[16] = {0};// extern global var in 'hopt.h'
 t_hopt_state	hopt_state = {0};
 
 void
-hopt_generate_help_menu(void);
+__hopt_generate_help_menu(void);
 
 // Parse and interpret options for you :0
 // Call HOPT_ADD_OPTION(...) for each option before
@@ -43,13 +43,20 @@ hopt(int ac, char** av)
 {
 	t_hopt			h = {0};
 
-	hopt_program_name = av[0];
+	hopt_program_path = av[0];
 	h.ac = ac;
 	h.av = av;
 	h.flags = calloc(hopt_c_maps, sizeof(BOOL));
 	FINDER(&h);
-	if (hopt_disable_sort_v == FALSE)
+	if (h.f.mandatory_count != hopt_c_mandatory)
+	{
+		__hopt_find_missing_mandatory(&h);
+		hopt_free_lstsort(h.f.head);
+	}
+	else if (h.f.error == FALSE && hopt_disable_sort_v == FALSE)
 		SORT(ac, av, h.f.head);
+	else if (hopt_disable_sort_v == FALSE)
+		hopt_free_lstsort(h.f.head);
 	free(h.flags);
 	if (hopt_nerr != HOPT_SUCCESS)
 		return (-1);
@@ -57,26 +64,39 @@ hopt(int ac, char** av)
 }
 
 static inline
+void
+hopt_map_check_flags(t_hopt_map** map, int flags, va_list* va)
+{
+	int	type = flags & 0xF;
+	if (type >= _HOPT_TYPE_BEGIN && type <= _HOPT_TYPE_LAST)
+		(*map)->mem = va_arg(*va, void*);
+	else if (type == HOPT_FLCB)
+	{
+		(*map)->mem = NULL;
+		(*map)->cb = va_arg(*va, t_hopt_callback);
+		(*map)->cb_arg = va_arg(*va, void*);
+	}
+	if (flags & HOPT_FLMA)
+	{
+		(*map)->mandatory = TRUE;
+		++hopt_c_mandatory;
+	}
+	else
+		(*map)->mandatory = FALSE;
+}
+
+static
 t_hopt_map*
-hopt_create_map(char* names, int argc, int flag, va_list va)
+hopt_create_map(char* names, int argc, int flags, va_list* va)
 {
 	t_hopt_map* map = malloc(sizeof(t_hopt_map));
 	if (!map)
 		return (NULL); //! fatal error
 	map->names = names;
 	map->argc = argc;
-	map->flag = flag;
-	if (flag >= HOPT_TYPE_DEFAULT && flag <= HOPT_TYPE_LAST)
-	{
-		map->mem = va_arg(va, void*);
-	}
-	else if (flag == HOPT_FLCB)
-	{
-		map->mem = NULL;
-		map->cb = va_arg(va, t_hopt_callback);
-		map->cb_arg = va_arg(va, void*);
-	}
-	map->desc = va_arg(va, char*);
+	map->flag = flags;
+	hopt_map_check_flags(&map, flags, va);
+	map->desc = va_arg(*va, char*);
 	return (map);
 }
 
@@ -91,7 +111,7 @@ hopt_add_option(char* names, int argc, int flag, ...)
 {
 	va_list	va;
 	va_start(va, flag);
-	hopt_maps[hopt_c_maps] = hopt_create_map(names, argc, flag, va);
+	hopt_maps[hopt_c_maps] = hopt_create_map(names, argc, flag, &va);
 	++hopt_c_maps;
 	va_end(va);
 	return (0);
@@ -122,11 +142,6 @@ hopt_strerror(void)
 			strncpy(test, "hopt: malloc failed.", 21);
 			test[21] = 0;
 			return (test);
-		case HOPT_INVALID:
-			test = malloc((34 + size + 1) * sizeof(char));
-			snprintf(test, 34 + size, "hopt: option -%s arg count invalid.", hopt_cerr);
-			test[34 + size] = 0;
-			return (test);
 		case HOPT_UNDEFINED:
 			test = malloc((29 + size + 1) * sizeof(char));
 			snprintf(test, 29 + size, "hopt: option -%s is undefined.", hopt_cerr);
@@ -136,11 +151,6 @@ hopt_strerror(void)
 			test = malloc((29 + size + 1) * sizeof(char));
 			snprintf(test, 29 + size, "hopt: option -%s is redefined.", hopt_cerr);
 			test[29 + size] = 0;
-			return (test);
-		case HOPT_BADOPTSTR:
-			test = malloc((76 + size + 1) * sizeof(char));
-			snprintf(test, 76 + size, "hopt: option -%s in bad string format, call hopt_help() to see string format.", hopt_cerr);
-			test[76 + size] = 0;
 			return (test);
 		case HOPT_BADSORDER:
 			test = malloc((111 + size + 1) * sizeof(char));
@@ -156,6 +166,16 @@ hopt_strerror(void)
 			test = malloc((42 + size + 1) * sizeof(char));
 			snprintf(test, 42 + size, "hopt: intern callback error with option %s.", hopt_cerr);
 			test[42 + size] = 0;
+			return (test);
+		case HOPT_MISSOPT:
+			test = malloc((36 + size + 1) * sizeof(char));
+			snprintf(test, 36 + size, "hopt: mandatory option %s is missing.", hopt_cerr);
+			test[36 + size] = 0;
+			return (test);
+		case HOPT_BADTYPE_NUM:
+			test = malloc((49 + size + 1) * sizeof(char));
+			snprintf(test, 49 + size, "hopt: option %s need strict numeric argument only.", hopt_cerr);
+			test[49 + size] = 0;
 			return (test);
 		default:
 			test = malloc((15 + 1) * sizeof(char));
@@ -211,7 +231,7 @@ char*
 hopt_help_menu(void)
 {
 	if (hopt_help_menu_str == NULL)
-		hopt_generate_help_menu();
+		__hopt_generate_help_menu();
 	return (hopt_help_menu_str);
 }
 

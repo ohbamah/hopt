@@ -136,19 +136,21 @@ FINDER_WRITE_TYPE(t_hopt* hopt_restrict h, unsigned int /*av index*/ idx, unsign
 
 static
 int
-FINDER_WRITE(t_hopt* hopt_restrict h, unsigned int /*av index*/ idx, unsigned int /*av[idx] index*/ c, unsigned int opt_idx, unsigned int __j)
+FINDER_WRITE(t_hopt* hopt_restrict h, unsigned int /*av index*/ idx, unsigned int /*av[idx] index*/ c, unsigned int opt_idx)
 {
 	unsigned int	j 			= 0;
 	unsigned int	tmp 		= idx;
 
-	if (hopt_maps[opt_idx]->flag != HOPT_FLCB)
+	if (hopt_maps[opt_idx]->mandatory == TRUE && h->flags[opt_idx] == FALSE)
+		++h->f.mandatory_count;
+	if ((hopt_maps[opt_idx]->flag & 0xF) != HOPT_FLCB)
 	{
 		if (h->oac > 0)
 		{
 			++idx;
 			if (!h->av[idx])
-				FINDER_ERROR(h, HOPT_MISSOARGC, idx - 1, __j);
-			while (h->av[idx] && j < h->oac)
+				FINDER_ERROR(h, HOPT_MISSOARGC, idx - 1, c);
+			while (h->av[idx] && j < h->oac) //? && h->f.error == FALSE
 			{
 				if ((!h->av[idx + 1] && j < h->oac - 1U) || (h->av[idx][0] == '-' && strnlen(h->av[idx], 2) > 1 && !isdigit(h->av[idx][1])))
 					FINDER_ERROR(h, HOPT_MISSOARGC, tmp, c);
@@ -216,9 +218,9 @@ FINDER(t_hopt* hopt_restrict h)
 								int	tmp_i = i;
 								if (h->flags[n] == FALSE || (hopt_redef_allowed == TRUE && hopt_redef_overwrt == TRUE))
 								{
-									tmp_i = FINDER_WRITE(h, i, 1, n, j);
+									tmp_i = FINDER_WRITE(h, i, 1, n);
 									if (tmp_i == -1)
-										FINDER_ERROR(h, HOPT_CBERROR, i, j);
+										FINDER_ERROR(h, HOPT_CBERROR, i, 1);
 									i = (unsigned int)tmp_i;
 								}
 								if (h->flags[n] == FALSE)
@@ -231,7 +233,7 @@ FINDER(t_hopt* hopt_restrict h)
 								if (h->oac > 0 && h->av[i][j + 1] != '\0')
 									FINDER_ERROR(h, HOPT_BADSORDER, i, j);
 								if (h->flags[n] == FALSE || (hopt_redef_allowed == TRUE && hopt_redef_overwrt == TRUE))
-									if (FINDER_WRITE(h, i, j, n, j) == -1)
+									if (FINDER_WRITE(h, i, j, n) == -1)
 										FINDER_ERROR(h, HOPT_CBERROR, i, j);
 								if (h->flags[n] == FALSE && j == 1)
 									++h->n_parsed;
@@ -264,11 +266,42 @@ FINDER(t_hopt* hopt_restrict h)
 			break ;
 		++i;
 	}
-
 }
 
 void
-hopt_generate_help_menu(void)
+__hopt_find_missing_mandatory(t_hopt* hopt_restrict h)
+{
+	int				f = FALSE;
+	char**			s;
+	unsigned int	size;
+
+	for (unsigned int i = 0, j = 0 ; i < hopt_c_maps ; ++i)
+	{
+		if (hopt_maps[i]->mandatory == TRUE)
+		{
+			if (f == TRUE)
+			{
+				hopt_nerr = HOPT_MISSOPT;
+				s = strsplit(hopt_maps[i]->names, '=');
+				size = strlen(s[0]);
+				if (size < sizeof(hopt_cerr))
+					strncpy(hopt_cerr, s[0], size);
+				else
+					strncpy(hopt_cerr, s[0], 15);
+				if (hopt_auto_help_v == TRUE)
+					printf("%s\n", hopt_help_menu());
+				free2((void**)s);
+				return ;
+			}
+			++j;
+		}
+		if (j == h->f.mandatory_count)
+			f = TRUE;
+	}
+}
+
+void
+__hopt_generate_help_menu(void)
 {
 	char*	endonarg_str = "";
 	char*	tmp;
@@ -277,7 +310,7 @@ hopt_generate_help_menu(void)
 		endonarg_str = "[OPTIONS...]";
 	hopt_help_menu_str =
 		hopt_strvajoin(8,
-			"Usage: ", basename(hopt_program_name), " [OPTIONS...] ", "ARGS... ", endonarg_str, "\n",\
+			"Usage: ", basename(hopt_program_path), " [OPTIONS...] ", "ARGS... ", endonarg_str, "\n",\
 			hopt_program_desc == NULL ? "" : hopt_program_desc, "\n\n");
 	unsigned int	lenmax = 0;
 	for (unsigned int i = 0 ; i < hopt_c_maps ; ++i)

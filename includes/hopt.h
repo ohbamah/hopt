@@ -25,39 +25,74 @@
 #ifndef HOPT_H
 #define HOPT_H 1
 
-# define HOPT_VERSION	100
+	/**********************/
+	/*                    */
+	/*    INFORMATIONS    */
+	/*                    */
+	/**********************/
 
-# define HOPT_SUCCESS	0
-# define HOPT_MALLOCF	1
-# define HOPT_INVALID	2
-# define HOPT_UNDEFINED	3
-# define HOPT_REDEFINED	4
-# define HOPT_BADSORDER	5
-# define HOPT_BADOPTSTR	6
-# define HOPT_MISSOARGC	7
-# define HOPT_CBERROR	8
+# define HOPT_VERSION	100
 
 # ifndef HOPT_MAX_OPTIONS
 // modifiable
 #  define HOPT_MAX_OPTIONS	64
 # endif
 
+	/*********************/
+	/*                   */
+	/*    ERROR CODES    */
+	/*                   */
+	/*********************/
+
+# define HOPT_SUCCESS		0	// Success, no error
+# define HOPT_MALLOCF		1	// A malloc failed
+# define HOPT_UNDEFINED		2	// An option is undefined
+# define HOPT_REDEFINED		3	// An option is redefined
+# define HOPT_BADSORDER		4	// A short option (who need args) in a string is in bad order
+# define HOPT_MISSOARGC		5	// Option argument missing
+# define HOPT_CBERROR		6	// When a callback function return -1 (essentially to stop parsing)
+# define HOPT_MISSOPT		7	// If a mandatory option is not present
+# define HOPT_BADTYPE_NUM	8	// Bad option argument type (not numeric)
+
+	/********************/
+	/*                  */
+	/*    HOPT FLAGS    */
+	/*                  */
+	/********************/
+
+# define _HOPT_FLAGS_BEGIN	_HOPT_TYPE_BEGIN
+
+	/*  TYPE FLAGS  */
+# define _HOPT_TYPE_BEGIN	HOPT_TYPE_DEFAULT
 # define HOPT_TYPE_DEFAULT	0	// Set option type (incompatible with HOPT_FLCB)
 # define HOPT_TYPE_STR		0	// Set option type (incompatible with HOPT_FLCB)
+	/*  NUM TYPE FLAGS  */
+# define _HOPT_TYPE_NUMBGIN	HOPT_TYPE_CHAR
 # define HOPT_TYPE_CHAR		1	// Set option type (incompatible with HOPT_FLCB)
 # define HOPT_TYPE_SHORT	2	// Set option type (incompatible with HOPT_FLCB)
 # define HOPT_TYPE_INT		3	// Set option type (incompatible with HOPT_FLCB)
 # define HOPT_TYPE_LONG		4	// Set option type (incompatible with HOPT_FLCB)
 # define HOPT_TYPE_FLOAT	5	// Set option type (incompatible with HOPT_FLCB)
 # define HOPT_TYPE_DOUBLE	6	// Set option type (incompatible with HOPT_FLCB)
-# define HOPT_TYPE_LAST		6	// Set option type (incompatible with HOPT_FLCB)
+# define _HOPT_TYPE_NUMLAST	HOPT_TYPE_DOUBLE
+# define _HOPT_TYPE_LAST	_HOPT_TYPE_NUMLAST
 
 # define HOPT_FLCB			7	// Set callback (incompatible with HOPT_TYPE_*)
+
+# define HOPT_FLMA			16	// Set an option as mandatory
+# define HOPT_FLAGS_LAST	HOPT_FLMA
+
+	/*******************/
+	/*                 */
+	/*     TYPEDEF     */
+	/*                 */
+	/*******************/
 
 typedef int (*t_hopt_callback)(int, char**, void*); //ac, av, cb_arg
 
 typedef struct hopt_map
 {
+	char			mandatory;
 	char*			desc;
 	char*			names;
 	int				argc;

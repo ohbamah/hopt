@@ -105,14 +105,27 @@ This is short exemple, but you can have a look at benchmark/hopt_usage.c for a m
 #include <stdio.h>
 #include <stdlib.h>
 
+struct t_opt
+{
+  char* name;
+  int count;
+  // ...
+};
+
 int main(int ac, char** av)
 {
+    t_opt  options = {0};
+
     hopt_allow_undef(); // Allow undefined options
     hopt_allow_redef(TRUE); // Allow options redefinition (with overwriting or not)
-    hopt_end_on_arg(); // End parsing while a non-option argument appears
+    hopt_end_on_arg(); // End parsing when a non-option argument appears
     hopt_disable_sort(); // Disable AV sorting
 
-    hopt_reset(); // Reset all features (redef/undef/...)
+    hopt_add_option("-name", 1, HOPT_TYPE_STR, &options.name, "Name of the subject.");
+    hopt_add_option("c=-count=n", 1, HOPT_TYPE_INT, &options.count, "Max count possible.");
+    /*
+      ...
+    */
     int count = hopt(ac, av); // Main function
     if (count == -1)
     {

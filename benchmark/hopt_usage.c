@@ -52,7 +52,7 @@ int	main(int ac, char** av)
 	hopt_add_option("n=-name",		1, HOPT_TYPE_STR,	&options.name,	"");
 	hopt_add_option("b=-callback",  1, HOPT_FLCB,		cbtest, &options,    "Just testing callback"); // With flag HOPT_FLCB it will call 'cbtest(1, "-b ..."/"--callback ...", &options)'
 	hopt(ac, av);
-	printf("%s\n", hopt_help_menu());
+	//printf("%s\n", hopt_help_menu());
 	hopt_free();
 
 	gettimeofday(&tv, NULL);
@@ -69,7 +69,7 @@ int	main(int ac, char** av)
 	printf("pids: %d %d %d %d %d %d\n", options.pids[0], options.pids[1], options.pids[2], options.pids[3], options.pids[4], options.pids[5]);
 	printf("name: %s\n", options.name ? options.name : "(null)");
 
-	for (int i = 0 ; i < ac ; ++i)
-		printf("av[%d] = %s\n", i, av[i]);
+	//for (int i = 0 ; i < ac ; ++i)
+	//	printf("av[%d] = %s\n", i, av[i]);
 	return (0);
 }

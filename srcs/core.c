@@ -36,6 +36,7 @@ SORT(int ac, /*const*/ char** av, t_hopt_sort* head)
 	unsigned int	i = 1;
 	int				count = 0;
 
+		// Allocation
 	ref = malloc((ac + 1) * sizeof(char*));
 	if (!ref)
 	{
@@ -43,16 +44,26 @@ SORT(int ac, /*const*/ char** av, t_hopt_sort* head)
 		return (-1);
 	}
 	ref[0] = av[0];
+		// Sort option arguments
 	while (tmp)
 	{
 		ref[i++] = av[tmp->index];
-		for (unsigned int j = 1 ; j <= tmp->argc ; ++j)
-			ref[i++] = av[tmp->index + j];
-		count += tmp->argc + 1;
+		if (strchr(av[tmp->index], '=') == NULL)
+		{
+			for (unsigned int j = 1 ; j <= tmp->argc ; ++j)
+				ref[i++] = av[tmp->index + j];
+			count += tmp->argc + 1;
+		}
+		else
+		{
+			tmp->argc = 0;
+			++count;
+		}
 		tmp = tmp->next;
 	}
 	tmp = head;
-	for (unsigned int j = 1 ; j < (unsigned int)ac ; ++j)
+		// Sort non-option arguments
+	for (unsigned int j = 1 ; j < (unsigned int)ac && i < (unsigned int)ac ; ++j)
 	{
 		if (tmp)
 		{
@@ -69,7 +80,7 @@ SORT(int ac, /*const*/ char** av, t_hopt_sort* head)
 	ref[i] = NULL;
 	hopt_free_lstsort(head);
 	i = 1;
-	for ( ; ref[i] ; ++i)
+	for ( ; ref[i] && av[i] ; ++i)
 		av[i] = ref[i];
 	free(ref);
 	return (count);
@@ -97,38 +108,37 @@ FINDER_ERROR(t_hopt* hopt_restrict h, int errcode, unsigned int i, int j)
 
 static inline
 void
-FINDER_WRITE_TYPE(t_hopt* hopt_restrict h, unsigned int /*av index*/ idx, unsigned int j, unsigned int opt_idx)
+FINDER_WRITE_TYPE(char* arg, unsigned int j, unsigned int opt_idx)
 {
-	char* dup = h->av[idx];
 	long long	at = 0LL;
 	double		ad = 0.0;
 	switch (hopt_maps[opt_idx]->flag)
 	{
 		case HOPT_TYPE_STR:
-			memcpy(hopt_maps[opt_idx]->mem + j * sizeof(char*), &dup, sizeof(char*));
+			memcpy(hopt_maps[opt_idx]->mem + j * sizeof(char*), &arg, sizeof(char*));
 			break;
 		case HOPT_TYPE_CHAR:
-			at = atoi(dup);
+			at = atoi(arg);
 			*((char*)(hopt_maps[opt_idx]->mem) + j) = (char)at;
 			break;
 		case HOPT_TYPE_SHORT:
-			at = atoi(dup);
+			at = atoi(arg);
 			*((short*)(hopt_maps[opt_idx]->mem) + j) = (short)at;
 			break;
 		case HOPT_TYPE_INT:
-			at = atoi(dup);
+			at = atoi(arg);
 			*((int*)(hopt_maps[opt_idx]->mem) + j) = (int)at;
 			break;
 		case HOPT_TYPE_LONG:
-			at = atoll(dup);
+			at = atoll(arg);
 			*((long long*)(hopt_maps[opt_idx]->mem) + j) = at;
 			break;
 		case HOPT_TYPE_FLOAT:
-			ad = (float)atof(dup);
+			ad = (float)atof(arg);
 			*((float*)(hopt_maps[opt_idx]->mem) + j) = (float)ad;
 			break;
 		case HOPT_TYPE_DOUBLE:
-			ad = (double)atof(dup);
+			ad = (double)atof(arg);
 			*((double*)(hopt_maps[opt_idx]->mem) + j) = ad;
 			break;
 	}
@@ -140,12 +150,22 @@ FINDER_WRITE(t_hopt* hopt_restrict h, unsigned int /*av index*/ idx, unsigned in
 {
 	unsigned int	j 			= 0;
 	unsigned int	tmp 		= idx;
+	BOOL			found		= FALSE;
 
 	if (hopt_maps[opt_idx]->mandatory == TRUE && h->flags[opt_idx] == FALSE)
 		++h->f.mandatory_count;
 	if ((hopt_maps[opt_idx]->flag & 0xF) != HOPT_FLCB)
 	{
-		if (h->oac > 0)
+		if (h->oac == 1)
+		{
+			char*	value = strchr(h->av[idx], '=');
+			if (value)
+			{
+				FINDER_WRITE_TYPE(&value[1], j, opt_idx);
+				found = TRUE;
+			}
+		}
+		if (h->oac >= 1 && found == FALSE)
 		{
 			++idx;
 			if (!h->av[idx])
@@ -154,7 +174,7 @@ FINDER_WRITE(t_hopt* hopt_restrict h, unsigned int /*av index*/ idx, unsigned in
 			{
 				if ((!h->av[idx + 1] && j < h->oac - 1U) || (h->av[idx][0] == '-' && strnlen(h->av[idx], 2) > 1 && !isdigit(h->av[idx][1])))
 					FINDER_ERROR(h, HOPT_MISSOARGC, tmp, c);
-				FINDER_WRITE_TYPE(h, idx, j, opt_idx);
+				FINDER_WRITE_TYPE(h->av[idx], j, opt_idx);
 				++j;
 				++idx;
 				++h->f.addrs_idx;
@@ -162,7 +182,7 @@ FINDER_WRITE(t_hopt* hopt_restrict h, unsigned int /*av index*/ idx, unsigned in
 			}
 			--idx;
 		}
-		else
+		else if (h->oac == 0)
 			++(*((BOOL*)hopt_maps[opt_idx]->mem));
 	}
 	else
@@ -171,6 +191,16 @@ FINDER_WRITE(t_hopt* hopt_restrict h, unsigned int /*av index*/ idx, unsigned in
 			return (-1);
 	}
 	return (idx);
+}
+
+static
+BOOL
+FINDER_LONG_CMP(const char* av_i, char* alias)
+{
+	char*	_strchr = strchr(av_i, '=');
+	if (!_strchr)
+		return (!strcmp(av_i, alias));
+	return (strlen(av_i) - strlen(_strchr) == strlen(alias) && av_i[strlen(alias)] == '=');
 }
 
 void
@@ -192,7 +222,7 @@ FINDER(t_hopt* hopt_restrict h)
 			if (h->av[i][1] != '-' && strnlen(&h->av[i][1], 2) > 1)
 				h->f.strso = TRUE;
 			j = 1;
-			while (h->av[i] && h->av[i][j] && is_an_option && h->f.error == FALSE)
+			while (h->av[i] && (h->av[i][j] && h->av[i][j] != '=') && is_an_option && h->f.error == FALSE)
 			{
 				n = 0;
 				h->f.found = FALSE;
@@ -213,7 +243,7 @@ FINDER(t_hopt* hopt_restrict h)
 						if (h->f.found == FALSE && h->f.error == FALSE)
 						{
 							h->f.last_i = i;
-							if (h->f.strso == FALSE && !strcmp(&h->av[i][1], alias[m]))
+							if (h->f.strso == FALSE && FINDER_LONG_CMP(&h->av[i][1], alias[m]))/*!strcmp(&h->av[i][1], alias[m]))*/
 							{
 								int	tmp_i = i;
 								if (h->flags[n] == FALSE || (hopt_redef_allowed == TRUE && hopt_redef_overwrt == TRUE))
@@ -230,14 +260,14 @@ FINDER(t_hopt* hopt_restrict h)
 							}
 							else if (h->f.strso == TRUE && h->av[i][j] == alias[m][0])
 							{
-								if (h->oac > 0 && h->av[i][j + 1] != '\0')
+								if (h->oac > 0 && (h->av[i][j + 1] != '\0' && (h->av[i][j + 1] != '=' && h->oac == 1)))
 									FINDER_ERROR(h, HOPT_BADSORDER, i, j);
 								if (h->flags[n] == FALSE || (hopt_redef_allowed == TRUE && hopt_redef_overwrt == TRUE))
 									if (FINDER_WRITE(h, i, j, n) == -1)
 										FINDER_ERROR(h, HOPT_CBERROR, i, j);
 								if (h->flags[n] == FALSE && j == 1)
 									++h->n_parsed;
-								if (h->av[i][j + 1] == '\0')
+								if (h->av[i][j + 1] == '\0')// || (h->av[i][j + 1] == '=' && h->oac == 1))
 									i += h->oac;
 								h->f.found = TRUE;
 							}
@@ -258,7 +288,8 @@ FINDER(t_hopt* hopt_restrict h)
 				}
 				if (h->f.found == FALSE && h->f.error == FALSE && hopt_undef_allowed == FALSE)
 					FINDER_ERROR(h, HOPT_UNDEFINED, i, j);
-				is_an_option = h->av[i][0] == '-' && strnlen(&h->av[i][0], 2) > 1;
+				else if (h->av[i])
+					is_an_option = h->av[i][0] == '-' && strnlen(&h->av[i][0], 2) > 1;
 				++j;
 			}
 		}

@@ -31,7 +31,7 @@
 	/*                    */
 	/**********************/
 
-# define HOPT_VERSION	100
+# define HOPT_VERSION	110
 
 # ifndef HOPT_MAX_OPTIONS
 // modifiable

@@ -42,7 +42,7 @@ YELLOW 	= \e[38;2;250;189;0m
 #*   VARIABLES   *#
 # ############### #
 
-NAME = hopt.lib
+NAME = libhopt.lib
 AR = @llvm-lib
 
 CC = @clang

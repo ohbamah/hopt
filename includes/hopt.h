@@ -47,12 +47,12 @@
 # define HOPT_SUCCESS		0	// Success, no error
 # define HOPT_MALLOCF		1	// A malloc failed
 # define HOPT_UNDEFINED		2	// An option is undefined
-# define HOPT_REDEFINED		3	// An option is redefined
-# define HOPT_BADSORDER		4	// A short option (who need args) in a string is in bad order
-# define HOPT_MISSOARGC		5	// Option argument missing
-# define HOPT_CBERROR		6	// When a callback function return -1 (essentially to stop parsing)
-# define HOPT_MISSOPT		7	// If a mandatory option is not present
-# define HOPT_BADTYPE_NUM	8	// Bad option argument type (not numeric)
+# define HOPT_REDEFINED		4	// An option is redefined
+# define HOPT_BADSORDER		8	// A short option (who need args) in a string is in bad order
+# define HOPT_MISSOARGC		16	// Option argument missing
+# define HOPT_CBERROR		32	// When a callback function return -1 (essentially to stop parsing)
+# define HOPT_MISSOPT		64	// If a mandatory option is not present
+# define HOPT_BADTYPE_NUM	128	// Bad option argument type (not numeric)
 
 	/********************/
 	/*                  */
@@ -148,6 +148,12 @@ char*	hopt_strerror(void);
 
 // Set program description
 void	hopt_program_description(char* program_desc);
+void	hopt_set_fd(int fd);
+# ifdef _STDIO_H
+void	hopt_set_file(FILE* file);
+# endif
+void	hopt_help_option(char* aliases, int automatic, int flagswhen);
+void	hopt_print_help_menu(void);
 // Undef allowed is not sorted, same for undef unallowed
 void	hopt_allow_undef(void);
 // @param overwrite The redefinition will overwrite the ancient definition (1), OR just be ignored (0) ?
@@ -157,7 +163,7 @@ void	hopt_end_on_arg(void);
 // Automatically show help menu if there is any undefined option
 //
 // @param enable_256termcolor Active bold and colored text (not working yet)
-void	hopt_auto_help(char enable_256termcolor);
+//void	hopt_auto_help(char enable_256termcolor);
 // Get help menu
 char*	hopt_help_menu(void);
 void	hopt_disable_sort(void);

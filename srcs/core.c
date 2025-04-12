@@ -102,7 +102,7 @@ FINDER_ERROR(t_hopt* hopt_restrict h, int errcode, unsigned int i, int j)
 		else
 			strncpy(hopt_cerr, &h->av[i][1], 15);
 	}
-	if (hopt_auto_help_v == TRUE && (errcode == HOPT_UNDEFINED || errcode == HOPT_MISSOARGC))
+	if (hopt_auto_help_v == TRUE && (hopt_help_flagsw & errcode)/*(errcode == HOPT_UNDEFINED || errcode == HOPT_MISSOARGC)*/)
 		printf("%s\n", hopt_help_menu());
 }
 
@@ -319,7 +319,7 @@ __hopt_find_missing_mandatory(t_hopt* hopt_restrict h)
 					strncpy(hopt_cerr, s[0], size);
 				else
 					strncpy(hopt_cerr, s[0], 15);
-				if (hopt_auto_help_v == TRUE)
+				if (hopt_auto_help_v == TRUE && (hopt_help_flagsw & HOPT_MISSOPT))
 					printf("%s\n", hopt_help_menu());
 				free2((void**)s);
 				return ;

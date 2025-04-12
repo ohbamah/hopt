@@ -28,7 +28,7 @@
 int				hopt_nerr = 0;		// extern global var in 'hopt.h'
 char			hopt_cerr[16] = {0};// extern global var in 'hopt.h'
 
-t_hopt_state	hopt_state = {0};
+t_hopt_state	hopt_state = {0, ._hopt_fd = 1};
 
 void
 __hopt_generate_help_menu(void);
@@ -220,12 +220,12 @@ hopt_program_description(char* program_desc)
 	hopt_program_desc = program_desc;
 }
 
-void
-hopt_auto_help(BOOL enable_256termcolor)
-{
-	hopt_256termcolor_v = enable_256termcolor;
-	hopt_auto_help_v = TRUE;
-}
+//void
+//hopt_auto_help(BOOL enable_256termcolor)
+//{
+//	hopt_256termcolor_v = enable_256termcolor;
+//	hopt_auto_help_v = TRUE;
+//}
 
 char*
 hopt_help_menu(void)
@@ -233,6 +233,35 @@ hopt_help_menu(void)
 	if (hopt_help_menu_str == NULL)
 		__hopt_generate_help_menu();
 	return (hopt_help_menu_str);
+}
+
+void	hopt_set_fd(int fd)
+{
+	hopt_fd = fd;
+}
+
+void	hopt_set_file(FILE* file)
+{
+	hopt_file = file;
+}
+
+void	hopt_help_option(char* aliases, int automatic, int flagswhen)
+{
+	hopt_add_option(aliases, 0, HOPT_FLCB, (t_hopt_callback)hopt_print_help_menu, NULL, NULL);
+	if (flagswhen == 0)
+		hopt_help_flagsw = (HOPT_UNDEFINED | HOPT_REDEFINED | HOPT_MISSOARGC | HOPT_MISSOPT);
+	else
+		hopt_help_flagsw = flagswhen;
+	hopt_auto_help_v = automatic;
+}
+
+inline
+void	hopt_print_help_menu(void)
+{
+	if (hopt_file == NULL)
+		dprintf(hopt_fd, "%s\n", hopt_help_menu());
+	else
+		fprintf(hopt_file, "%s\n", hopt_help_menu());
 }
 
 void

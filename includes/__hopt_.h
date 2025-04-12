@@ -67,6 +67,9 @@
 # define hopt_help_menu_str		hopt_state._hopt_help_menu_str
 # define hopt_program_path		hopt_state._hopt_program_path
 # define hopt_program_desc		hopt_state._hopt_program_desc
+# define hopt_fd				hopt_state._hopt_fd
+# define hopt_file				hopt_state._hopt_file
+# define hopt_help_flagsw		hopt_state._hopt_help_flagsw
 
 typedef struct hopt_sort
 {
@@ -96,6 +99,9 @@ typedef struct hopt_state
 	BOOL			_hopt_disable_sort_v;
 	BOOL			_hopt_auto_help_v;
 	BOOL			_hopt_256termcolor_v;
+	int				_hopt_help_flagsw;
+	int				_hopt_fd;
+	FILE*			_hopt_file;
 	char*			_hopt_help_menu_str;
 	char*			_hopt_program_path;
 	char*			_hopt_program_desc;

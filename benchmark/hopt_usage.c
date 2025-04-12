@@ -43,6 +43,7 @@ int	main(int ac, char** av)
 	//hopt_end_on_arg();			//? End parsing while a non-option argument appears
 	//hopt_disable_sort();			//? Disable AV sorting
 	//hopt_auto_help(FALSE/TRUE);	//? Automatically show the help menu when an option is undefined (or miss argument count)
+	hopt_help_option("h=-help", 1, HOPT_BADSORDER);
 	//hopt_reset();					//? Reset all HOPT functionnalities (allow redef/undef and end_on_arg)
 	//hopt_program_description("Send ICMP ECHO_REQUEST packets to network hosts.");
 	hopt_add_option("c=-count",		1, HOPT_TYPE_INT,	&options.count,	"Max packet to send");
@@ -52,7 +53,7 @@ int	main(int ac, char** av)
 	hopt_add_option("n=-name",		1, HOPT_TYPE_STR,	&options.name,	"");
 	hopt_add_option("b=-callback",  1, HOPT_FLCB,		cbtest, &options,    "Just testing callback"); // With flag HOPT_FLCB it will call 'cbtest(1, "-b ..."/"--callback ...", &options)'
 	hopt(ac, av);
-	//printf("%s\n", hopt_help_menu());
+	printf("%s\n", hopt_help_menu());
 	hopt_free();
 
 	gettimeofday(&tv, NULL);

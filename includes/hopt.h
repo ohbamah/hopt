@@ -95,8 +95,9 @@ typedef struct hopt_map
 	char			mandatory;
 	char*			desc;
 	char*			names;
-	int				argc;
+	char*			group;
 	void*			mem;
+	int				argc;
 	int				flag;
 	t_hopt_callback	cb;
 	void*			cb_arg;
@@ -146,6 +147,8 @@ char*	hopt_strerror(void);
 		OPTIONS for HOPT
 	*/
 
+// Set next options group
+void	hopt_group(char* group_title);
 // Set program description
 void	hopt_program_description(char* program_desc);
 void	hopt_set_fd(int fd);

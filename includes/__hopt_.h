@@ -70,6 +70,7 @@
 # define hopt_fd				hopt_state._hopt_fd
 # define hopt_file				hopt_state._hopt_file
 # define hopt_help_flagsw		hopt_state._hopt_help_flagsw
+# define hopt_group_title		hopt_state._hopt_group_title
 
 typedef struct hopt_sort
 {
@@ -105,6 +106,7 @@ typedef struct hopt_state
 	char*			_hopt_help_menu_str;
 	char*			_hopt_program_path;
 	char*			_hopt_program_desc;
+	char*			_hopt_group_title;
 	t_hopt_map*		_hopt_maps[HOPT_MAX_OPTIONS];
 	unsigned int	_hopt_c_maps;
 	unsigned int	_hopt_c_mandatory;

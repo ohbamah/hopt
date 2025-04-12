@@ -331,6 +331,21 @@ __hopt_find_missing_mandatory(t_hopt* hopt_restrict h)
 	}
 }
 
+static inline
+void
+__hopt_genhm_group(char** last_group, int i, unsigned int lenmax)
+{
+	*last_group = hopt_maps[i]->group;
+	int		buffersize = lenmax + strlen(*last_group) + 10;
+	char*	tmp = hopt_help_menu_str;
+	char*	line = malloc((buffersize + 1) * sizeof(char));
+	line[buffersize] = '\0';
+	snprintf(line, buffersize, "\e[1m\n  %-*s\e[0m\n", (int)lenmax, *last_group);
+	hopt_help_menu_str = hopt_strjoin(hopt_help_menu_str, line);
+	free(tmp);
+	free(line);
+}
+
 void
 __hopt_generate_help_menu(void)
 {
@@ -340,9 +355,9 @@ __hopt_generate_help_menu(void)
 	if (hopt_end_on_arg_v == FALSE)
 		endonarg_str = "[OPTIONS...]";
 	hopt_help_menu_str =
-		hopt_strvajoin(8,
+		hopt_strvajoin(7,
 			"Usage: ", basename(hopt_program_path), " [OPTIONS...] ", "ARGS... ", endonarg_str, "\n",\
-			hopt_program_desc == NULL ? "" : hopt_program_desc, "\n\n");
+			hopt_program_desc == NULL ? "" : hopt_program_desc);
 	unsigned int	lenmax = 0;
 	for (unsigned int i = 0 ; i < hopt_c_maps ; ++i)
 	{
@@ -364,8 +379,11 @@ __hopt_generate_help_menu(void)
 			free(aliases);
 		}
 	}
+	char*	last_group = NULL;
 	for (unsigned int i = 0 ; i < hopt_c_maps ; ++i)
 	{
+		if (last_group != hopt_maps[i]->group)	// just compare address
+			__hopt_genhm_group(&last_group, i, lenmax);
 		if (hopt_maps[i]->desc != NULL)
 		{
 			char**	splitted = strsplit(hopt_maps[i]->names, '=');

@@ -97,6 +97,7 @@ hopt_create_map(char* names, int argc, int flags, va_list* va)
 	map->flag = flags;
 	hopt_map_check_flags(&map, flags, va);
 	map->desc = va_arg(*va, char*);
+	map->group = hopt_group_title;
 	return (map);
 }
 
@@ -220,12 +221,11 @@ hopt_program_description(char* program_desc)
 	hopt_program_desc = program_desc;
 }
 
-//void
-//hopt_auto_help(BOOL enable_256termcolor)
-//{
-//	hopt_256termcolor_v = enable_256termcolor;
-//	hopt_auto_help_v = TRUE;
-//}
+void
+hopt_group(char* group_name)
+{
+	hopt_group_title = group_name;
+}
 
 char*
 hopt_help_menu(void)

@@ -43,7 +43,7 @@ int	main(int ac, char** av)
 	//hopt_end_on_arg();			//? End parsing while a non-option argument appears
 	//hopt_disable_sort();			//? Disable AV sorting
 	//hopt_auto_help(FALSE/TRUE);	//? Automatically show the help menu when an option is undefined (or miss argument count)
-	hopt_help_option("h=-help", 1, HOPT_BADSORDER);
+	//hopt_help_option("h=-help", 1, HOPT_BADSORDER);
 	//hopt_reset();					//? Reset all HOPT functionnalities (allow redef/undef and end_on_arg)
 	//hopt_program_description("Send ICMP ECHO_REQUEST packets to network hosts.");
 	hopt_group("Group 1");

@@ -355,9 +355,9 @@ __hopt_generate_help_menu(void)
 	if (hopt_end_on_arg_v == FALSE)
 		endonarg_str = "[OPTIONS...]";
 	hopt_help_menu_str =
-		hopt_strvajoin(7,
+		hopt_strvajoin(8,
 			"Usage: ", basename(hopt_program_path), " [OPTIONS...] ", "ARGS... ", endonarg_str, "\n",\
-			hopt_program_desc == NULL ? "" : hopt_program_desc);
+			hopt_program_desc == NULL ? "" : hopt_program_desc, "\n\n");
 	unsigned int	lenmax = 0;
 	for (unsigned int i = 0 ; i < hopt_c_maps ; ++i)
 	{

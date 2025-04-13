@@ -82,6 +82,8 @@
 # define i_hopt_help_flagsw		hopt_state[hopt_current_state]._hopt_help_flagsw
 # define i_hopt_group_title		hopt_state[hopt_current_state]._hopt_group_title
 
+# define i_hopt_flags			hopt_flags[hopt_current_state]
+
 # define hopt_g_fd				hopt_global_state.fd
 # define hopt_g_file			hopt_global_state.file
 # define hopt_g_disable_sort	hopt_global_state.disable_sort_v
@@ -105,6 +107,16 @@ typedef struct FINDER
 	unsigned int	mandatory_count;	// Follow the count of mandatory option
 }	t_FINDER;
 
+typedef struct hopt
+{
+	int				ac;			// Program arguments count
+	char**			av;			// Program arguments value
+	unsigned int	oac;		// Option Argument Count
+	unsigned int	offset;		// Offset in the buffer
+	unsigned int	n_parsed;	// Count of element parsed (included options' arguments)
+	t_FINDER		f;			// FINDER(...) infos
+}	t_hopt;
+
 typedef struct hopt_global_state
 {
 	BOOL	disable_sort_v;
@@ -113,38 +125,7 @@ typedef struct hopt_global_state
 	char*	program_desc;
 }	t_hopt_global_state;
 
-typedef struct hopt_state
-{
-	//BOOL (*hopt_cb_earlyquit)(const char*, unsigned int) = NULL;
-	BOOL			_hopt_end_on_arg_v;
-	BOOL			_hopt_undef_allowed;
-	BOOL			_hopt_redef_allowed;
-	BOOL			_hopt_redef_overwrt;
-	BOOL			_hopt_auto_help_v;
-	BOOL			_hopt_256termcolor_v;
-	int				_hopt_help_flagsw;
-	char*			_hopt_help_menu_str;
-	char*			_hopt_program_path;
-	char*			_hopt_group_title;
-	char*			_hopt_cmd_name;
-	t_hopt_map*		_hopt_maps[HOPT_MAX_OPTIONS];
-	unsigned int	_hopt_c_maps;
-	unsigned int	_hopt_c_mandatory;
-}	t_hopt_state;
-
-typedef struct hopt
-{
-	int				ac;			// Program arguments count
-	char**			av;			// Program arguments value
-	BOOL*			flags;		// To check if an option is redefined
-	unsigned int	oac;		// Option Argument Count
-	unsigned int	offset;		// Offset in the buffer
-	unsigned int	n_parsed;	// Count of element parsed (included options' arguments)
-	t_FINDER		f;			// FINDER(...) infos
-}	t_hopt;
-
 extern t_hopt_global_state	hopt_global_state;
-extern t_hopt_state			hopt_state[HOPT_MAX_SUBCMD];
 extern unsigned int			hopt_c_states;
 extern unsigned int			hopt_current_state;
 

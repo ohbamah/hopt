@@ -33,6 +33,7 @@ char			hopt_ncmd[HOPT_MAX_SSTR_SIZE] = {0};
 char			hopt_ccmd[HOPT_MAX_SSTR_SIZE] = {0};
 char			hopt_pcmd[HOPT_MAX_SSTR_SIZE] = {0};
 
+char				hopt_flags[HOPT_MAX_SUBCMD][HOPT_MAX_OPTIONS] = {{0}};
 t_hopt_global_state	hopt_global_state = {0};
 t_hopt_state		hopt_state[HOPT_MAX_SUBCMD] = {{0}};
 unsigned int		hopt_c_states = 0;
@@ -54,7 +55,7 @@ hopt(int ac, char** av)
 	hopt_program_path = av[0];
 	h.ac = ac;
 	h.av = av;
-	h.flags = calloc(hopt_c_maps, sizeof(BOOL));
+	//h.flags = calloc(hopt_c_maps, sizeof(BOOL));
 	FINDER(&h);
 	if (h.f.mandatory_count != hopt_c_mandatory)
 	{
@@ -65,7 +66,7 @@ hopt(int ac, char** av)
 		SORT(ac, av, h.f.head);
 	else if (hopt_g_disable_sort == FALSE)
 		hopt_free_lstsort(h.f.head);
-	free(h.flags);
+	//free(h.flags);
 	if (hopt_nerr != HOPT_SUCCESS)
 		return (-1);
 	return (h.n_parsed);
@@ -134,11 +135,14 @@ hopt_add_option(char* names, int argc, int flag, ...)
 void
 hopt_free(void)
 {
-	//for (unsigned int i = 0 ; i < hopt_c_maps ; ++i)
-	//{
+	for (unsigned int i = 0 ; i <= hopt_c_states ; ++i)
+	{
 		//free(hopt_maps[i]);
 		//hopt_maps[i] = NULL;
-	//}
+		for (unsigned int j = 0 ; j < hopt_state[i]._hopt_c_maps ; ++j)
+			free(hopt_state[i]._hopt_maps[j]);
+		free(hopt_state[i]._hopt_help_menu_str);
+	}
 	//free(hopt_help_menu_str);
 }
 

@@ -39,6 +39,7 @@
 # endif
 
 # ifndef HOPT_MAX_SUBCMD
+// modifiable
 #  define HOPT_MAX_SUBCMD	1
 # endif
 
@@ -122,6 +123,33 @@ typedef struct hopt_map
 	t_hopt_callback	cb;
 	void*			cb_arg;
 }	t_hopt_map;
+
+	/*******************/
+	/*                 */
+	/*     PRIVATE     */
+	/*                 */
+	/*******************/
+
+typedef struct hopt_state
+{
+/*bool*/char			_hopt_end_on_arg_v;
+/*bool*/char			_hopt_undef_allowed;
+/*bool*/char			_hopt_redef_allowed;
+/*bool*/char			_hopt_redef_overwrt;
+/*bool*/char			_hopt_auto_help_v;
+/*bool*/char			_hopt_256termcolor_v;
+		int				_hopt_help_flagsw;
+		char*			_hopt_help_menu_str;
+		char*			_hopt_program_path;
+		char*			_hopt_group_title;
+		char*			_hopt_cmd_name;
+		t_hopt_map*		_hopt_maps[HOPT_MAX_OPTIONS];
+		unsigned int	_hopt_c_maps;
+		unsigned int	_hopt_c_mandatory;
+}	t_hopt_state;
+
+extern /*bool*/char			hopt_flags[HOPT_MAX_SUBCMD][HOPT_MAX_OPTIONS]; // To check if an option is redefined
+extern t_hopt_state			hopt_state[HOPT_MAX_SUBCMD];
 
 //void hopt_early_exit(BOOL (*fun)(char* option, int optlen));
 

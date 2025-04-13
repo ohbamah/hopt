@@ -38,21 +38,31 @@
 #  define HOPT_MAX_OPTIONS	64
 # endif
 
+# ifndef HOPT_MAX_SUBCMD
+#  define HOPT_MAX_SUBCMD	1
+# endif
+
+# ifndef HOPT_MAX_SSTR_SIZE
+#  define HOPT_MAX_SSTR_SIZE	16
+# endif
+
 	/*********************/
 	/*                   */
 	/*    ERROR CODES    */
 	/*                   */
 	/*********************/
 
-# define HOPT_SUCCESS		0	// Success, no error
-# define HOPT_MALLOCF		1	// A malloc failed
-# define HOPT_UNDEFINED		2	// An option is undefined
-# define HOPT_REDEFINED		4	// An option is redefined
-# define HOPT_BADSORDER		8	// A short option (who need args) in a string is in bad order
-# define HOPT_MISSOARGC		16	// Option argument missing
-# define HOPT_CBERROR		32	// When a callback function return -1 (essentially to stop parsing)
-# define HOPT_MISSOPT		64	// If a mandatory option is not present
-# define HOPT_BADTYPE_NUM	128	// Bad option argument type (not numeric)
+# define HOPT_SUCCESS				0	// Success, no error
+# define HOPT_MALLOCF				1	// A malloc failed
+# define HOPT_UNDEFINED				2	// An option is undefined
+# define HOPT_REDEFINED				4	// An option is redefined
+# define HOPT_BADSORDER				8	// A short option (who need args) in a string is in bad order
+# define HOPT_MISSOARGC				16	// Option argument missing
+# define HOPT_CBERROR				32	// When a callback function return -1 (essentially to stop parsing)
+# define HOPT_MISSOPT				64	// If a mandatory option is not present
+# define HOPT_BADTYPE_NUM			128	// Bad option argument type (not numeric)
+# define HOPT_MAX_OPTIONS_REACHED	256	// The max options number has been reached
+# define HOPT_MAX_SUBCMD_REACHED	512	// The max subcmd options number has been reached
 
 	/********************/
 	/*                  */
@@ -84,6 +94,16 @@
 
 	/*******************/
 	/*                 */
+	/*    CMD FLAGS    */
+	/*                 */
+	/*******************/
+
+# define HOPT_NOCMD			0
+# define HOPT_THERE_IS_PCMD	1
+# define HOPT_THERE_IS_NCMD	2
+
+	/*******************/
+	/*                 */
 	/*     TYPEDEF     */
 	/*                 */
 	/*******************/
@@ -108,7 +128,16 @@ typedef struct hopt_map
 // Error code to specify error (look at 'hopt_cerr' to see which option is causing the error)
 extern int		hopt_nerr;
 // The option that refers to the error stored in 'hopt_nerr'
-extern char		hopt_cerr[16];
+extern char		hopt_cerr[HOPT_MAX_SSTR_SIZE];
+
+// Code to specify if there is a command before or/and after
+extern int		hopt_fcmd;
+// The command that refers to the next command (if exists)
+extern char		hopt_ncmd[HOPT_MAX_SSTR_SIZE];
+// The current command (if exists)
+extern char		hopt_ccmd[HOPT_MAX_SSTR_SIZE];
+// The command that refers to the previous command (if exists)
+extern char		hopt_pcmd[HOPT_MAX_SSTR_SIZE];
 
 	/*
 		CORE for HOPT
@@ -156,7 +185,8 @@ void	hopt_set_fd(int fd);
 void	hopt_set_file(FILE* file);
 # endif
 void	hopt_help_option(char* aliases, int automatic, int flagswhen);
-void	hopt_print_help_menu(void);
+void	hopt_subcmd(char* cmd);
+void	hopt_print_help_menu(char* cmd);
 // Undef allowed is not sorted, same for undef unallowed
 void	hopt_allow_undef(void);
 // @param overwrite The redefinition will overwrite the ancient definition (1), OR just be ignored (0) ?
@@ -168,7 +198,7 @@ void	hopt_end_on_arg(void);
 // @param enable_256termcolor Active bold and colored text (not working yet)
 //void	hopt_auto_help(char enable_256termcolor);
 // Get help menu
-char*	hopt_help_menu(void);
+char*	hopt_help_menu(char* cmd);
 void	hopt_disable_sort(void);
 void	hopt_reset(void);
 

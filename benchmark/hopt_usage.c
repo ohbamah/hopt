@@ -8,6 +8,7 @@ typedef struct opt
 {
 	/*BOOL*/char	flood;
 			int		count;
+			int		number;
 			char*	test[4];
 			int		pids[6];
 			char*	name;
@@ -46,16 +47,26 @@ int	main(int ac, char** av)
 	//hopt_help_option("h=-help", 1, HOPT_BADSORDER);
 	//hopt_reset();					//? Reset all HOPT functionnalities (allow redef/undef and end_on_arg)
 	//hopt_program_description("Send ICMP ECHO_REQUEST packets to network hosts.");
+
+	hopt_help_option("h=-help", 0, 0);
 	hopt_group("Group 1");
-	hopt_add_option("c=-count",		1, HOPT_TYPE_INT,	&options.count,	"Max packet to send");
-	hopt_add_option("f=-flood=l",	0, 0,				&options.flood,	"Flood network");
-	hopt_add_option("-test",		4, HOPT_TYPE_STR,	&options.test,	NULL);
-	hopt_add_option("p=-pid=-pids",	6, HOPT_TYPE_INT,	&options.pids,	"Pid processes to kill");
-	hopt_group("Group 2");
-	hopt_add_option("n=-name",		1, HOPT_TYPE_STR,	&options.name,	"");
-	hopt_add_option("b=-callback",  1, HOPT_FLCB,		cbtest, &options,    "Just testing callback"); // With flag HOPT_FLCB it will call 'cbtest(1, "-b ..."/"--callback ...", &options)'
+		hopt_add_option("c=-count",		1, HOPT_TYPE_INT,	&options.count,	"Max packet to send");
+		hopt_add_option("f=-flood=l",	0, 0,				&options.flood,	"Flood network");
+		hopt_add_option("-test",		4, HOPT_TYPE_STR,	&options.test,	NULL);
+
+	hopt_subcmd("run");
+		hopt_help_option("h=-help", 0, 0);
+		hopt_add_option("m=-number",	1, HOPT_TYPE_INT,	&options.number, "Number of EZ");
+		hopt_add_option("p=-pid=-pids",	6, HOPT_TYPE_INT,	&options.pids,	"Pid processes to kill");
+		hopt_group("Group 2");
+			hopt_add_option("n=-name",		1, HOPT_TYPE_STR,	&options.name,	"");
+			hopt_add_option("b=-callback",  1, HOPT_FLCB,		cbtest, &options,    "Just testing callback"); // With flag HOPT_FLCB it will call 'cbtest(1, "-b ..."/"--callback ...", &options)'
+
+
+
 	hopt(ac, av);
-	printf("%s\n", hopt_help_menu());
+	//printf("./hopt : %s\n", hopt_help_menu(NULL));
+	//printf("run : %s\n", hopt_help_menu("run"));
 	hopt_free();
 
 	gettimeofday(&tv, NULL);
@@ -67,6 +78,7 @@ int	main(int ac, char** av)
 	free(error);
 
 	printf("count: %d\n", options.count);
+	printf("number: %d\n", options.number);
 	printf("flood: %d\n", options.flood);
 	printf("test: %s %s %s %s\n", options.test[0], options.test[1], options.test[2], options.test[3]);
 	printf("pids: %d %d %d %d %d %d\n", options.pids[0], options.pids[1], options.pids[2], options.pids[3], options.pids[4], options.pids[5]);

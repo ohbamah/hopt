@@ -54,23 +54,38 @@
 
 //# define CASSERT(condition) ((void)sizeof(char[-!(condition)]))
 
-# define hopt_end_on_arg_v		hopt_state._hopt_end_on_arg_v
-# define hopt_undef_allowed		hopt_state._hopt_undef_allowed
-# define hopt_redef_allowed		hopt_state._hopt_redef_allowed
-# define hopt_redef_overwrt		hopt_state._hopt_redef_overwrt
-# define hopt_disable_sort_v	hopt_state._hopt_disable_sort_v
-# define hopt_auto_help_v		hopt_state._hopt_auto_help_v
-# define hopt_256termcolor_v	hopt_state._hopt_256termcolor_v	// not working yet
-# define hopt_maps				hopt_state._hopt_maps
-# define hopt_c_maps			hopt_state._hopt_c_maps
-# define hopt_c_mandatory		hopt_state._hopt_c_mandatory	// Count of mandatory option
-# define hopt_help_menu_str		hopt_state._hopt_help_menu_str
-# define hopt_program_path		hopt_state._hopt_program_path
-# define hopt_program_desc		hopt_state._hopt_program_desc
-# define hopt_fd				hopt_state._hopt_fd
-# define hopt_file				hopt_state._hopt_file
-# define hopt_help_flagsw		hopt_state._hopt_help_flagsw
-# define hopt_group_title		hopt_state._hopt_group_title
+# define hopt_end_on_arg_v		hopt_state[hopt_c_states]._hopt_end_on_arg_v
+# define hopt_undef_allowed		hopt_state[hopt_c_states]._hopt_undef_allowed
+# define hopt_redef_allowed		hopt_state[hopt_c_states]._hopt_redef_allowed
+# define hopt_redef_overwrt		hopt_state[hopt_c_states]._hopt_redef_overwrt
+# define hopt_auto_help_v		hopt_state[hopt_c_states]._hopt_auto_help_v
+# define hopt_maps				hopt_state[hopt_c_states]._hopt_maps
+# define hopt_c_maps			hopt_state[hopt_c_states]._hopt_c_maps
+# define hopt_c_mandatory		hopt_state[hopt_c_states]._hopt_c_mandatory
+# define hopt_help_menu_str		hopt_state[hopt_c_states]._hopt_help_menu_str
+# define hopt_program_path		hopt_state[hopt_c_states]._hopt_program_path
+# define hopt_cmd_name			hopt_state[hopt_c_states]._hopt_cmd_name
+# define hopt_help_flagsw		hopt_state[hopt_c_states]._hopt_help_flagsw
+# define hopt_group_title		hopt_state[hopt_c_states]._hopt_group_title
+
+# define i_hopt_end_on_arg_v	hopt_state[hopt_current_state]._hopt_end_on_arg_v
+# define i_hopt_undef_allowed	hopt_state[hopt_current_state]._hopt_undef_allowed
+# define i_hopt_redef_allowed	hopt_state[hopt_current_state]._hopt_redef_allowed
+# define i_hopt_redef_overwrt	hopt_state[hopt_current_state]._hopt_redef_overwrt
+# define i_hopt_auto_help_v		hopt_state[hopt_current_state]._hopt_auto_help_v
+# define i_hopt_maps			hopt_state[hopt_current_state]._hopt_maps
+# define i_hopt_c_maps			hopt_state[hopt_current_state]._hopt_c_maps
+# define i_hopt_c_mandatory		hopt_state[hopt_current_state]._hopt_c_mandatory
+# define i_hopt_help_menu_str	hopt_state[hopt_current_state]._hopt_help_menu_str
+# define i_hopt_program_path	hopt_state[hopt_current_state]._hopt_program_path
+# define i_hopt_cmd_name		hopt_state[hopt_current_state]._hopt_cmd_name
+# define i_hopt_help_flagsw		hopt_state[hopt_current_state]._hopt_help_flagsw
+# define i_hopt_group_title		hopt_state[hopt_current_state]._hopt_group_title
+
+# define hopt_g_fd				hopt_global_state.fd
+# define hopt_g_file			hopt_global_state.file
+# define hopt_g_disable_sort	hopt_global_state.disable_sort_v
+# define hopt_g_program_desc	hopt_global_state.program_desc
 
 typedef struct hopt_sort
 {
@@ -90,6 +105,14 @@ typedef struct FINDER
 	unsigned int	mandatory_count;	// Follow the count of mandatory option
 }	t_FINDER;
 
+typedef struct hopt_global_state
+{
+	BOOL	disable_sort_v;
+	int		fd;
+	FILE*	file;
+	char*	program_desc;
+}	t_hopt_global_state;
+
 typedef struct hopt_state
 {
 	//BOOL (*hopt_cb_earlyquit)(const char*, unsigned int) = NULL;
@@ -97,16 +120,13 @@ typedef struct hopt_state
 	BOOL			_hopt_undef_allowed;
 	BOOL			_hopt_redef_allowed;
 	BOOL			_hopt_redef_overwrt;
-	BOOL			_hopt_disable_sort_v;
 	BOOL			_hopt_auto_help_v;
 	BOOL			_hopt_256termcolor_v;
 	int				_hopt_help_flagsw;
-	int				_hopt_fd;
-	FILE*			_hopt_file;
 	char*			_hopt_help_menu_str;
 	char*			_hopt_program_path;
-	char*			_hopt_program_desc;
 	char*			_hopt_group_title;
+	char*			_hopt_cmd_name;
 	t_hopt_map*		_hopt_maps[HOPT_MAX_OPTIONS];
 	unsigned int	_hopt_c_maps;
 	unsigned int	_hopt_c_mandatory;
@@ -123,7 +143,10 @@ typedef struct hopt
 	t_FINDER		f;			// FINDER(...) infos
 }	t_hopt;
 
-extern t_hopt_state	hopt_state;
+extern t_hopt_global_state	hopt_global_state;
+extern t_hopt_state			hopt_state[HOPT_MAX_SUBCMD];
+extern unsigned int			hopt_c_states;
+extern unsigned int			hopt_current_state;
 
 // lst.c
 t_hopt_sort*	hopt_new_node(unsigned int index, unsigned int argc);
@@ -147,8 +170,10 @@ SORT(int ac, /*const*/ char** av, t_hopt_sort* head);
 void
 FINDER(t_hopt* hopt_restrict h);
 void
-__hopt_generate_help_menu(void);
+__hopt_generate_help_menu(t_hopt_state* hopt_restrict state);
 void
 __hopt_find_missing_mandatory(t_hopt* hopt_restrict h);
+void
+__hopt_intern_print_help_menu(int, char**, char* cmd);
 
 #endif

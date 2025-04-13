@@ -25,13 +25,21 @@
 #include "__hopt_.h"
 #include "hopt.h"
 
-int				hopt_nerr = 0;		// extern global var in 'hopt.h'
-char			hopt_cerr[16] = {0};// extern global var in 'hopt.h'
+int				hopt_nerr = HOPT_SUCCESS;		// extern global var in 'hopt.h'
+char			hopt_cerr[HOPT_MAX_SSTR_SIZE] = {0};// extern global var in 'hopt.h'
 
-t_hopt_state	hopt_state = {0, ._hopt_fd = 1};
+int				hopt_fcmd = HOPT_NOCMD;
+char			hopt_ncmd[HOPT_MAX_SSTR_SIZE] = {0};
+char			hopt_ccmd[HOPT_MAX_SSTR_SIZE] = {0};
+char			hopt_pcmd[HOPT_MAX_SSTR_SIZE] = {0};
+
+t_hopt_global_state	hopt_global_state = {0};
+t_hopt_state		hopt_state[HOPT_MAX_SUBCMD] = {{0}};
+unsigned int		hopt_c_states = 0;
+unsigned int		hopt_current_state = 0;
 
 void
-__hopt_generate_help_menu(void);
+__hopt_generate_help_menu(t_hopt_state* hopt_restrict);
 
 // Parse and interpret options for you :0
 // Call HOPT_ADD_OPTION(...) for each option before
@@ -53,9 +61,9 @@ hopt(int ac, char** av)
 		__hopt_find_missing_mandatory(&h);
 		hopt_free_lstsort(h.f.head);
 	}
-	else if (h.f.error == FALSE && hopt_disable_sort_v == FALSE)
+	else if (h.f.error == FALSE && hopt_g_disable_sort == FALSE)
 		SORT(ac, av, h.f.head);
-	else if (hopt_disable_sort_v == FALSE)
+	else if (hopt_g_disable_sort == FALSE)
 		hopt_free_lstsort(h.f.head);
 	free(h.flags);
 	if (hopt_nerr != HOPT_SUCCESS)
@@ -110,6 +118,11 @@ hopt_create_map(char* names, int argc, int flags, va_list* va)
 int
 hopt_add_option(char* names, int argc, int flag, ...)
 {
+	if (hopt_c_maps == HOPT_MAX_OPTIONS)
+	{
+		hopt_nerr = HOPT_MAX_OPTIONS_REACHED;
+		return (-1);
+	}
 	va_list	va;
 	va_start(va, flag);
 	hopt_maps[hopt_c_maps] = hopt_create_map(names, argc, flag, &va);
@@ -121,12 +134,12 @@ hopt_add_option(char* names, int argc, int flag, ...)
 void
 hopt_free(void)
 {
-	for (unsigned int i = 0 ; i < hopt_c_maps ; ++i)
-	{
-		free(hopt_maps[i]);
-		hopt_maps[i] = NULL;
-	}
-	free(hopt_help_menu_str);
+	//for (unsigned int i = 0 ; i < hopt_c_maps ; ++i)
+	//{
+		//free(hopt_maps[i]);
+		//hopt_maps[i] = NULL;
+	//}
+	//free(hopt_help_menu_str);
 }
 
 // Return a string describe error (returned str must be free'd)
@@ -178,6 +191,16 @@ hopt_strerror(void)
 			snprintf(test, 49 + size, "hopt: option %s need strict numeric argument only.", hopt_cerr);
 			test[49 + size] = 0;
 			return (test);
+		case HOPT_MAX_OPTIONS_REACHED:
+			test = malloc((44 + 1) * sizeof(char));
+			test = strdup("hopt: max count of option has been reached.");
+			test[44] = 0;
+			return (test);
+		case HOPT_MAX_SUBCMD_REACHED:
+			test = malloc((49 + 1) * sizeof(char));
+			test = strdup("hopt: max count of sub-command has been reached.");
+			test[49] = 0;
+			return (test);
 		default:
 			test = malloc((15 + 1) * sizeof(char));
 			strncpy(test, "hopt: success.", 15);
@@ -212,13 +235,13 @@ hopt_end_on_arg(void)
 void
 hopt_disable_sort(void)
 {
-	hopt_disable_sort_v = TRUE;
+	hopt_g_disable_sort = TRUE;
 }
 
 void
 hopt_program_description(char* program_desc)
 {
-	hopt_program_desc = program_desc;
+	hopt_g_program_desc = program_desc;
 }
 
 void
@@ -227,27 +250,48 @@ hopt_group(char* group_name)
 	hopt_group_title = group_name;
 }
 
-char*
-hopt_help_menu(void)
+void
+hopt_subcmd(char* cmd)
 {
-	if (hopt_help_menu_str == NULL)
-		__hopt_generate_help_menu();
-	return (hopt_help_menu_str);
+	++hopt_c_states;
+	hopt_group_title = NULL;
+	hopt_cmd_name = cmd;
+}
+
+char*
+hopt_help_menu(char* cmd)
+{
+	if (cmd == NULL)
+	{
+		__hopt_generate_help_menu(&hopt_state[0]);
+		return (hopt_state[0]._hopt_help_menu_str);
+	}
+	for (unsigned int i = 1 ; i <= hopt_c_states ; ++i)
+	{
+		t_hopt_state*	tmp = &hopt_state[i];
+		if (!strcmp(cmd, tmp->_hopt_cmd_name))
+		{
+			if (tmp->_hopt_help_menu_str == NULL)
+				__hopt_generate_help_menu(tmp);
+			return (tmp->_hopt_help_menu_str);
+		}
+	}
+	return (NULL);
 }
 
 void	hopt_set_fd(int fd)
 {
-	hopt_fd = fd;
+	hopt_g_fd = fd;
 }
 
 void	hopt_set_file(FILE* file)
 {
-	hopt_file = file;
+	hopt_g_file = file;
 }
 
 void	hopt_help_option(char* aliases, int automatic, int flagswhen)
 {
-	hopt_add_option(aliases, 0, HOPT_FLCB, (t_hopt_callback)hopt_print_help_menu, NULL, NULL);
+	hopt_add_option(aliases, 0, HOPT_FLCB, (t_hopt_callback)__hopt_intern_print_help_menu, hopt_cmd_name, NULL);
 	if (flagswhen == 0)
 		hopt_help_flagsw = (HOPT_UNDEFINED | HOPT_REDEFINED | HOPT_MISSOARGC | HOPT_MISSOPT);
 	else
@@ -256,12 +300,12 @@ void	hopt_help_option(char* aliases, int automatic, int flagswhen)
 }
 
 inline
-void	hopt_print_help_menu(void)
+void	hopt_print_help_menu(char* cmd)
 {
-	if (hopt_file == NULL)
-		dprintf(hopt_fd, "%s\n", hopt_help_menu());
+	if (hopt_g_file == NULL)
+		dprintf(hopt_g_fd, "%s\n", hopt_help_menu(cmd));
 	else
-		fprintf(hopt_file, "%s\n", hopt_help_menu());
+		fprintf(hopt_g_file, "%s\n", hopt_help_menu(cmd));
 }
 
 void

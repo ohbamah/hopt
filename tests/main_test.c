@@ -51,16 +51,11 @@ int	main(int ac, char** av)
 	t_opt	options;
 
 	memset(&options, 0, sizeof(options));
-	hopt_add_option("c=-count",		1,	HOPT_TYPE_INT,	&options.count);
-	hopt_add_option("f=-flood=l",	0,	0,				&options.flood);
-	hopt_add_option("-test",		4,	HOPT_TYPE_STR,	&options.test);
-	hopt_add_option("p=-pid=-pids",	6,	HOPT_TYPE_INT,	&options.pids);
-	hopt_add_option("n=-name",		1,	HOPT_TYPE_STR,	&options.name);
-	//hopt_add_option("c=-count",		1,	&options.count, HOPT_TYPE_INT);
-	//hopt_add_option("f=-flood=l",	0,	&options.flood);
-	//hopt_add_option("-test",		4,	&options.test, HOPT_TYPE_STR);
-	//hopt_add_option("p=-pid=-pids",	6,	&options.pids, HOPT_TYPE_INT);
-	//hopt_add_option("n=-name",		1,	&options.name, HOPT_TYPE_STR);
+	hopt_add_option("c=-count",		1,	HOPT_TYPE_INT,	&options.count, NULL);
+	hopt_add_option("f=-flood=l",	0,	0,				&options.flood, NULL);
+	hopt_add_option("-test",		4,	HOPT_TYPE_STR,	&options.test, NULL);
+	hopt_add_option("p=-pid=-pids",	6,	HOPT_TYPE_INT,	&options.pids, NULL);
+	hopt_add_option("n=-name",		1,	HOPT_TYPE_STR,	&options.name, NULL);
 
 	printf("CMD=");
 	for (int i = 0 ; i < ac ; ++i)

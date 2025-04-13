@@ -40,7 +40,6 @@ int	main(int ac, char** av)
 	unsigned long	start_at = microsecond(&tv);
 
 	t_opt	options = {0};
-	printf("sizeof : %d\n", sizeof(hopt_flags));
 	//hopt_allow_redef(FALSE/TRUE);	//? Allow options redefinition (with overwriting or not)
 	//hopt_allow_undef();			//? Allow undefined options (ignored)
 	//hopt_end_on_arg();			//? End parsing while a non-option argument appears

@@ -33,9 +33,10 @@ char			hopt_ncmd[HOPT_MAX_SSTR_SIZE] = {0};
 char			hopt_ccmd[HOPT_MAX_SSTR_SIZE] = {0};
 char			hopt_pcmd[HOPT_MAX_SSTR_SIZE] = {0};
 
-char				hopt_flags[HOPT_MAX_SUBCMD][HOPT_MAX_OPTIONS] = {{0}};
-t_hopt_global_state	hopt_global_state = {0};
-t_hopt_state		hopt_state[HOPT_MAX_SUBCMD] = {{0}};
+char**				hopt_flags = NULL;
+t_hopt_global_state	hopt_global_state = {0, .fd = 1};
+t_hopt_state		hopt_default_state = {0};
+t_hopt_state*		hopt_state = &hopt_default_state;
 unsigned int		hopt_c_states = 0;
 unsigned int		hopt_current_state = 0;
 
@@ -55,7 +56,8 @@ hopt(int ac, char** av)
 	hopt_program_path = av[0];
 	h.ac = ac;
 	h.av = av;
-	//h.flags = calloc(hopt_c_maps, sizeof(BOOL));
+	hopt_flags = calloc(hopt_c_states + 1, sizeof(BOOL*));
+	hopt_flags[0] = calloc(hopt_state[0]._hopt_c_maps, sizeof(BOOL));
 	FINDER(&h);
 	if (h.f.mandatory_count != hopt_c_mandatory)
 	{
@@ -66,7 +68,6 @@ hopt(int ac, char** av)
 		SORT(ac, av, h.f.head);
 	else if (hopt_g_disable_sort == FALSE)
 		hopt_free_lstsort(h.f.head);
-	//free(h.flags);
 	if (hopt_nerr != HOPT_SUCCESS)
 		return (-1);
 	return (h.n_parsed);
@@ -74,39 +75,37 @@ hopt(int ac, char** av)
 
 static inline
 void
-hopt_map_check_flags(t_hopt_map** map, int flags, va_list* va)
+hopt_map_check_flags(t_hopt_map* map, int flags, va_list* va)
 {
 	int	type = flags & 0xF;
 	if (type >= _HOPT_TYPE_BEGIN && type <= _HOPT_TYPE_LAST)
-		(*map)->mem = va_arg(*va, void*);
+		(*map).mem = va_arg(*va, void*);
 	else if (type == HOPT_FLCB)
 	{
-		(*map)->mem = NULL;
-		(*map)->cb = va_arg(*va, t_hopt_callback);
-		(*map)->cb_arg = va_arg(*va, void*);
+		(*map).mem = NULL;
+		(*map).cb = va_arg(*va, t_hopt_callback);
+		(*map).cb_arg = va_arg(*va, void*);
 	}
 	if (flags & HOPT_FLMA)
 	{
-		(*map)->mandatory = TRUE;
+		(*map).mandatory = TRUE;
 		++hopt_c_mandatory;
 	}
 	else
-		(*map)->mandatory = FALSE;
+		(*map).mandatory = FALSE;
 }
 
 static
-t_hopt_map*
+t_hopt_map
 hopt_create_map(char* names, int argc, int flags, va_list* va)
 {
-	t_hopt_map* map = malloc(sizeof(t_hopt_map));
-	if (!map)
-		return (NULL); //! fatal error
-	map->names = names;
-	map->argc = argc;
-	map->flag = flags;
+	t_hopt_map	map;
+	map.names = names;
+	map.argc = argc;
+	map.flag = flags;
 	hopt_map_check_flags(&map, flags, va);
-	map->desc = va_arg(*va, char*);
-	map->group = hopt_group_title;
+	map.desc = va_arg(*va, char*);
+	map.group = hopt_group_title;
 	return (map);
 }
 
@@ -119,13 +118,10 @@ hopt_create_map(char* names, int argc, int flags, va_list* va)
 int
 hopt_add_option(char* names, int argc, int flag, ...)
 {
-	if (hopt_c_maps == HOPT_MAX_OPTIONS)
-	{
-		hopt_nerr = HOPT_MAX_OPTIONS_REACHED;
-		return (-1);
-	}
 	va_list	va;
 	va_start(va, flag);
+	hopt_maps = realloc(hopt_maps, (hopt_c_maps + 1) * sizeof(t_hopt_map));
+	memset(&hopt_maps[hopt_c_maps], 0, sizeof(t_hopt_map));
 	hopt_maps[hopt_c_maps] = hopt_create_map(names, argc, flag, &va);
 	++hopt_c_maps;
 	va_end(va);
@@ -137,13 +133,13 @@ hopt_free(void)
 {
 	for (unsigned int i = 0 ; i <= hopt_c_states ; ++i)
 	{
-		//free(hopt_maps[i]);
-		//hopt_maps[i] = NULL;
-		for (unsigned int j = 0 ; j < hopt_state[i]._hopt_c_maps ; ++j)
-			free(hopt_state[i]._hopt_maps[j]);
 		free(hopt_state[i]._hopt_help_menu_str);
+		free(hopt_state[i]._hopt_maps);
+		free(hopt_flags[i]);
 	}
-	//free(hopt_help_menu_str);
+	if (hopt_state != &hopt_default_state)
+		free(hopt_state);
+	free(hopt_flags);
 }
 
 // Return a string describe error (returned str must be free'd)
@@ -194,16 +190,6 @@ hopt_strerror(void)
 			test = malloc((49 + size + 1) * sizeof(char));
 			snprintf(test, 49 + size, "hopt: option %s need strict numeric argument only.", hopt_cerr);
 			test[49 + size] = 0;
-			return (test);
-		case HOPT_MAX_OPTIONS_REACHED:
-			test = malloc((44 + 1) * sizeof(char));
-			test = strdup("hopt: max count of option has been reached.");
-			test[44] = 0;
-			return (test);
-		case HOPT_MAX_SUBCMD_REACHED:
-			test = malloc((49 + 1) * sizeof(char));
-			test = strdup("hopt: max count of sub-command has been reached.");
-			test[49] = 0;
 			return (test);
 		default:
 			test = malloc((15 + 1) * sizeof(char));
@@ -258,6 +244,15 @@ void
 hopt_subcmd(char* cmd)
 {
 	++hopt_c_states;
+	if (hopt_state == &hopt_default_state)
+	{
+		t_hopt_state*	tmp = &hopt_default_state;
+		hopt_state = malloc(sizeof(t_hopt_state) * 2);
+		memcpy(&hopt_state[0], tmp, sizeof(t_hopt_state));
+	}
+	else
+		hopt_state = realloc(hopt_state, (hopt_c_states + 1) * sizeof(t_hopt_state));
+	memset(&hopt_state[hopt_c_states], 0, sizeof(t_hopt_state));
 	hopt_group_title = NULL;
 	hopt_cmd_name = cmd;
 }

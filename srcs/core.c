@@ -112,34 +112,34 @@ FINDER_WRITE_TYPE(char* arg, unsigned int j, unsigned int opt_idx)
 {
 	long long	at = 0LL;
 	double		ad = 0.0;
-	switch (i_hopt_maps[opt_idx]->flag)
+	switch (i_hopt_maps[opt_idx].flag)
 	{
 		case HOPT_TYPE_STR:
-			memcpy(i_hopt_maps[opt_idx]->mem + j * sizeof(char*), &arg, sizeof(char*));
+			memcpy(i_hopt_maps[opt_idx].mem + j * sizeof(char*), &arg, sizeof(char*));
 			break;
 		case HOPT_TYPE_CHAR:
 			at = atoi(arg);
-			*((char*)(i_hopt_maps[opt_idx]->mem) + j) = (char)at;
+			*((char*)(i_hopt_maps[opt_idx].mem) + j) = (char)at;
 			break;
 		case HOPT_TYPE_SHORT:
 			at = atoi(arg);
-			*((short*)(i_hopt_maps[opt_idx]->mem) + j) = (short)at;
+			*((short*)(i_hopt_maps[opt_idx].mem) + j) = (short)at;
 			break;
 		case HOPT_TYPE_INT:
 			at = atoi(arg);
-			*((int*)(i_hopt_maps[opt_idx]->mem) + j) = (int)at;
+			*((int*)(i_hopt_maps[opt_idx].mem) + j) = (int)at;
 			break;
 		case HOPT_TYPE_LONG:
 			at = atoll(arg);
-			*((long long*)(i_hopt_maps[opt_idx]->mem) + j) = at;
+			*((long long*)(i_hopt_maps[opt_idx].mem) + j) = at;
 			break;
 		case HOPT_TYPE_FLOAT:
 			ad = (float)atof(arg);
-			*((float*)(i_hopt_maps[opt_idx]->mem) + j) = (float)ad;
+			*((float*)(i_hopt_maps[opt_idx].mem) + j) = (float)ad;
 			break;
 		case HOPT_TYPE_DOUBLE:
 			ad = (double)atof(arg);
-			*((double*)(i_hopt_maps[opt_idx]->mem) + j) = ad;
+			*((double*)(i_hopt_maps[opt_idx].mem) + j) = ad;
 			break;
 	}
 }
@@ -152,9 +152,9 @@ FINDER_WRITE(t_hopt* hopt_restrict h, unsigned int /*av index*/ idx, unsigned in
 	unsigned int	tmp 		= idx;
 	BOOL			found		= FALSE;
 
-	if (i_hopt_maps[opt_idx]->mandatory == TRUE && i_hopt_flags[opt_idx] == FALSE)
+	if (i_hopt_maps[opt_idx].mandatory == TRUE && i_hopt_flags[opt_idx] == FALSE)
 		++h->f.mandatory_count;
-	if ((i_hopt_maps[opt_idx]->flag & 0xF) != HOPT_FLCB)
+	if ((i_hopt_maps[opt_idx].flag & 0xF) != HOPT_FLCB)
 	{
 		if (h->oac == 1)
 		{
@@ -183,11 +183,11 @@ FINDER_WRITE(t_hopt* hopt_restrict h, unsigned int /*av index*/ idx, unsigned in
 			--idx;
 		}
 		else if (h->oac == 0)
-			++(*((BOOL*)i_hopt_maps[opt_idx]->mem));
+			++(*((BOOL*)i_hopt_maps[opt_idx].mem));
 	}
 	else
 	{
-		if ((i_hopt_maps[opt_idx]->cb)(h->oac, &h->av[idx], i_hopt_maps[opt_idx]->cb_arg) == -1)
+		if ((i_hopt_maps[opt_idx].cb)(h->oac, &h->av[idx], i_hopt_maps[opt_idx].cb_arg) == -1)
 			return (-1);
 	}
 	return (idx);
@@ -229,8 +229,8 @@ FINDER(t_hopt* hopt_restrict h)
 				h->offset = 0;
 				while (n < i_hopt_c_maps && h->f.found == FALSE && h->f.error == FALSE)
 				{
-					h->oac = i_hopt_maps[n]->argc;
-					char** alias = strsplit(i_hopt_maps[n]->names, '=');//FINDER_ALIAS(h, n);
+					h->oac = i_hopt_maps[n].argc;
+					char** alias = strsplit(i_hopt_maps[n].names, '=');//FINDER_ALIAS(h, n);
 					if (!alias)
 					{
 						hopt_nerr = HOPT_MALLOCF;
@@ -302,6 +302,7 @@ FINDER(t_hopt* hopt_restrict h)
 				if (!strcmp(h->av[i], hopt_state[cmt]._hopt_cmd_name))
 				{
 					hopt_current_state = cmt;
+					i_hopt_flags = calloc(hopt_state[cmt]._hopt_c_maps, sizeof(BOOL));
 					break;
 				}
 			}
@@ -322,12 +323,12 @@ __hopt_find_missing_mandatory(t_hopt* hopt_restrict h)
 		t_hopt_state*	tmp = &hopt_state[hopt_c_states];
 		for (unsigned int i = 0, j = 0 ; i < tmp->_hopt_c_maps ; ++i)
 		{
-			if (tmp->_hopt_maps[i]->mandatory == TRUE)
+			if (tmp->_hopt_maps[i].mandatory == TRUE)
 			{
 				if (f == TRUE)
 				{
 					hopt_nerr = HOPT_MISSOPT;
-					s = strsplit(tmp->_hopt_maps[i]->names, '=');
+					s = strsplit(tmp->_hopt_maps[i].names, '=');
 					size = strlen(s[0]);
 					if (size < sizeof(hopt_cerr))
 						strncpy(hopt_cerr, s[0], size);
@@ -359,7 +360,7 @@ static inline
 void
 __hopt_genhm_group(t_hopt_state* hopt_restrict state, char** last_group, int i, unsigned int lenmax)
 {
-	*last_group = state->_hopt_maps[i]->group;
+	*last_group = state->_hopt_maps[i].group;
 	int		buffersize = lenmax + strlen(*last_group) + 10;
 	char*	tmp = state->_hopt_help_menu_str;
 	char*	line = malloc((buffersize + 1) * sizeof(char));
@@ -388,9 +389,9 @@ __hopt_generate_help_menu(t_hopt_state* hopt_restrict state)
 	unsigned int	lenmax = 0;
 	for (unsigned int i = 0 ; i < state->_hopt_c_maps ; ++i)
 	{
-		if (state->_hopt_maps[i]->desc != NULL)
+		if (state->_hopt_maps[i].desc != NULL)
 		{
-			char**	splitted = strsplit(state->_hopt_maps[i]->names, '=');
+			char**	splitted = strsplit(state->_hopt_maps[i].names, '=');
 			char*	aliases = hopt_strjoin("-", splitted[0]);
 			free(splitted[0]);
 			for (int j = 1 ; splitted[j] ; ++j)
@@ -409,11 +410,11 @@ __hopt_generate_help_menu(t_hopt_state* hopt_restrict state)
 	char*	last_group = NULL;
 	for (unsigned int i = 0 ; i < state->_hopt_c_maps ; ++i)
 	{
-		if (last_group != state->_hopt_maps[i]->group)	// just compare address
+		if (last_group != state->_hopt_maps[i].group)	// just compare address
 			__hopt_genhm_group(state, &last_group, i, lenmax);
-		if (state->_hopt_maps[i]->desc != NULL)
+		if (state->_hopt_maps[i].desc != NULL)
 		{
-			char**	splitted = strsplit(state->_hopt_maps[i]->names, '=');
+			char**	splitted = strsplit(state->_hopt_maps[i].names, '=');
 			char*	aliases = hopt_strjoin("-", splitted[0]);
 			free(splitted[0]);
 			for (int j = 1 ; splitted[j] ; ++j)
@@ -424,9 +425,9 @@ __hopt_generate_help_menu(t_hopt_state* hopt_restrict state)
 				free(splitted[j]);
 			}
 			free(splitted);
-			int		buffersize = lenmax + strlen(state->_hopt_maps[i]->desc) + 8;
+			int		buffersize = lenmax + strlen(state->_hopt_maps[i].desc) + 8;
 			char*	line = malloc((buffersize + 1) * sizeof(char));
-			snprintf(line, buffersize, "  %-*s\t%s\n", (int)lenmax, aliases, state->_hopt_maps[i]->desc);
+			snprintf(line, buffersize, "  %-*s\t%s\n", (int)lenmax, aliases, state->_hopt_maps[i].desc);
 			line[buffersize] = '\0';
 			tmp = state->_hopt_help_menu_str;
 			state->_hopt_help_menu_str = hopt_strjoin(state->_hopt_help_menu_str, line);

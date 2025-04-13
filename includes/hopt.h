@@ -33,16 +33,6 @@
 
 # define HOPT_VERSION	110
 
-# ifndef HOPT_MAX_OPTIONS
-// modifiable
-#  define HOPT_MAX_OPTIONS	64
-# endif
-
-# ifndef HOPT_MAX_SUBCMD
-// modifiable
-#  define HOPT_MAX_SUBCMD	1
-# endif
-
 # ifndef HOPT_MAX_SSTR_SIZE
 #  define HOPT_MAX_SSTR_SIZE	16
 # endif
@@ -62,8 +52,6 @@
 # define HOPT_CBERROR				32	// When a callback function return -1 (essentially to stop parsing)
 # define HOPT_MISSOPT				64	// If a mandatory option is not present
 # define HOPT_BADTYPE_NUM			128	// Bad option argument type (not numeric)
-# define HOPT_MAX_OPTIONS_REACHED	256	// The max options number has been reached
-# define HOPT_MAX_SUBCMD_REACHED	512	// The max subcmd options number has been reached
 
 	/********************/
 	/*                  */
@@ -143,13 +131,14 @@ typedef struct hopt_state
 		char*			_hopt_program_path;
 		char*			_hopt_group_title;
 		char*			_hopt_cmd_name;
-		t_hopt_map*		_hopt_maps[HOPT_MAX_OPTIONS];
+		t_hopt_map*		_hopt_maps;
 		unsigned int	_hopt_c_maps;
 		unsigned int	_hopt_c_mandatory;
 }	t_hopt_state;
 
-extern /*bool*/char			hopt_flags[HOPT_MAX_SUBCMD][HOPT_MAX_OPTIONS]; // To check if an option is redefined
-extern t_hopt_state			hopt_state[HOPT_MAX_SUBCMD];
+extern /*bool*/char**		hopt_flags; // To check if an option is redefined
+extern t_hopt_state			hopt_default_state;
+extern t_hopt_state*		hopt_state;
 
 //void hopt_early_exit(BOOL (*fun)(char* option, int optlen));
 

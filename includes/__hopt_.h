@@ -125,6 +125,28 @@ typedef struct hopt_global_state
 	char*	program_desc;
 }	t_hopt_global_state;
 
+typedef struct hopt_state
+{
+/*bool*/char			_hopt_end_on_arg_v;
+/*bool*/char			_hopt_undef_allowed;
+/*bool*/char			_hopt_redef_allowed;
+/*bool*/char			_hopt_redef_overwrt;
+/*bool*/char			_hopt_auto_help_v;
+/*bool*/char			_hopt_256termcolor_v;
+		int				_hopt_help_flagsw;
+		char*			_hopt_help_menu_str;
+		char*			_hopt_program_path;
+		char*			_hopt_group_title;
+		char*			_hopt_cmd_name;
+		t_hopt_map*		_hopt_maps;
+		unsigned int	_hopt_c_maps;
+		unsigned int	_hopt_c_mandatory;
+}	t_hopt_state;
+
+extern /*bool*/char**		hopt_flags; // To check if an option is redefined
+extern t_hopt_state			hopt_default_state;
+extern t_hopt_state*		hopt_state;
+
 extern t_hopt_global_state	hopt_global_state;
 extern unsigned int			hopt_c_states;
 extern unsigned int			hopt_current_state;

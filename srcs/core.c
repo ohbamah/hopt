@@ -353,6 +353,7 @@ __hopt_intern_print_help_menu(int __a, char** __b, char* cmd)
 {
 	(void)__a;
 	(void)__b;
+	hopt_help_called_v = TRUE;
 	hopt_print_help_menu(cmd);
 }
 

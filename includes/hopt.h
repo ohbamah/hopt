@@ -118,28 +118,6 @@ typedef struct hopt_map
 	/*                 */
 	/*******************/
 
-typedef struct hopt_state
-{
-/*bool*/char			_hopt_end_on_arg_v;
-/*bool*/char			_hopt_undef_allowed;
-/*bool*/char			_hopt_redef_allowed;
-/*bool*/char			_hopt_redef_overwrt;
-/*bool*/char			_hopt_auto_help_v;
-/*bool*/char			_hopt_256termcolor_v;
-		int				_hopt_help_flagsw;
-		char*			_hopt_help_menu_str;
-		char*			_hopt_program_path;
-		char*			_hopt_group_title;
-		char*			_hopt_cmd_name;
-		t_hopt_map*		_hopt_maps;
-		unsigned int	_hopt_c_maps;
-		unsigned int	_hopt_c_mandatory;
-}	t_hopt_state;
-
-extern /*bool*/char**		hopt_flags; // To check if an option is redefined
-extern t_hopt_state			hopt_default_state;
-extern t_hopt_state*		hopt_state;
-
 //void hopt_early_exit(BOOL (*fun)(char* option, int optlen));
 
 // Error code to specify error (look at 'hopt_cerr' to see which option is causing the error)
@@ -147,13 +125,22 @@ extern int		hopt_nerr;
 // The option that refers to the error stored in 'hopt_nerr'
 extern char		hopt_cerr[HOPT_MAX_SSTR_SIZE];
 
+extern char		hopt_help_called_v;
+
 // Code to specify if there is a command before or/and after
+// Working progress
 extern int		hopt_fcmd;
+
 // The command that refers to the next command (if exists)
+// Working progress
 extern char		hopt_ncmd[HOPT_MAX_SSTR_SIZE];
+
 // The current command (if exists)
+// Working progress
 extern char		hopt_ccmd[HOPT_MAX_SSTR_SIZE];
+
 // The command that refers to the previous command (if exists)
+// Working progress
 extern char		hopt_pcmd[HOPT_MAX_SSTR_SIZE];
 
 	/*
@@ -210,6 +197,9 @@ void	hopt_allow_undef(void);
 void	hopt_allow_redef(char overwrite);
 // Stop parsing on first non-option argument
 void	hopt_end_on_arg(void);
+// Return 1 if the user has called the help option, otherwise return 0
+char	hopt_help_called(void);
+
 // Automatically show help menu if there is any undefined option
 //
 // @param enable_256termcolor Active bold and colored text (not working yet)

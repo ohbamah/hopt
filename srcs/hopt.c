@@ -28,6 +28,8 @@
 int				hopt_nerr = HOPT_SUCCESS;		// extern global var in 'hopt.h'
 char			hopt_cerr[HOPT_MAX_SSTR_SIZE] = {0};// extern global var in 'hopt.h'
 
+char			hopt_help_called_v = FALSE;
+
 int				hopt_fcmd = HOPT_NOCMD;
 char			hopt_ncmd[HOPT_MAX_SSTR_SIZE] = {0};
 char			hopt_ccmd[HOPT_MAX_SSTR_SIZE] = {0};
@@ -255,6 +257,12 @@ hopt_subcmd(char* cmd)
 	memset(&hopt_state[hopt_c_states], 0, sizeof(t_hopt_state));
 	hopt_group_title = NULL;
 	hopt_cmd_name = cmd;
+}
+
+char
+hopt_help_called(void)
+{
+	return (hopt_help_called_v);
 }
 
 char*

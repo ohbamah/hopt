@@ -78,7 +78,7 @@ The library follows the POSIX standard, so in theory it will be compatible with 
 With HOPT, you can customize everything while keeping extreme control over option management.
 
 | Features                        | HOPT     | ARGP     | GETOPT |
-| :------------------------------ | :------- | :--------| :----- |
+| :------------------------------ | :------- | :-------- | :----- |
 | Parse program options           | ​✅       | ✅       | ✅     |
 | Parse option arguments          | ​✅       | ✅       | ❌     |
 | Sort argument values            | ​✅       | ❌       | ❌     |
@@ -90,7 +90,8 @@ With HOPT, you can customize everything while keeping extreme control over optio
 | Supports callbacks              | ​✅       | ​✅       | ❌     |
 | Custom help menu setup          | ​✅       | ❌       | ❌     |
 | Auto-generated help menu        | ​✅       | ​✅       | ❌     |
-| Automatic error handling        | ❌       | ​✅       | ❌     |
+| Manages sub-command options     | ​✅       | ​〰️       | ❌     |
+| Automatic error handling        | 〰️       | ​✅       | ❌     |
 
 
 ## Usage/Examples

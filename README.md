@@ -92,6 +92,7 @@ With HOPT, you can customize everything while keeping extreme control over optio
 | Auto-generated help menu        | ​✅       | ​✅       | ❌     |
 | Manages sub-command options     | ​✅       | ​〰️       | ❌     |
 | Automatic error handling        | 〰️       | ​✅       | ❌     |
+| POSIX (OS compatibilities)      | ✅       | ​❌       | 〰️     |
 
 
 ## Usage/Examples

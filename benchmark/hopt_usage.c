@@ -1,5 +1,3 @@
-#define HOPT_MAX_OPTIONS	64
-#define HOPT_MAX_SUBCMD		1
 #include "../includes/hopt.h"
 #include <stdio.h>
 #include <stdlib.h>
@@ -39,7 +37,10 @@ int	main(int ac, char** av)
 	gettimeofday(&tv, NULL);
 	unsigned long	start_at = microsecond(&tv);
 
-	t_opt	options = {0};
+	t_opt	options = {	// default values in initialization of the structure (of course there may be more than one structure)
+		.number = 2,
+		.count = 1
+	};
 	//hopt_allow_redef(FALSE/TRUE);	//? Allow options redefinition (with overwriting or not)
 	//hopt_allow_undef();			//? Allow undefined options (ignored)
 	//hopt_end_on_arg();			//? End parsing while a non-option argument appears
@@ -49,7 +50,8 @@ int	main(int ac, char** av)
 	//hopt_reset();					//? Reset all HOPT functionnalities (allow redef/undef and end_on_arg)
 	//hopt_program_description("Send ICMP ECHO_REQUEST packets to network hosts.");
 
-	hopt_help_option("h=-help", 0, 0);
+	hopt_set_fd(2); // or 'hopt_set_file(stderr);'
+	hopt_help_option("h=-help", 1, 0);
 	hopt_group("Group 1");
 		hopt_add_option("c=-count",		1, HOPT_TYPE_INT,	&options.count,	"Max packet to send");
 		hopt_add_option("f=-flood=l",	0, 0,				&options.flood,	"Flood network");
@@ -65,18 +67,21 @@ int	main(int ac, char** av)
 
 
 
-	hopt(ac, av);
-	//printf("./hopt : %s\n", hopt_help_menu(NULL));
-	//printf("run : %s\n", hopt_help_menu("run"));
+	int count = hopt(ac, av);
 	hopt_free();
 
 	gettimeofday(&tv, NULL);
 	unsigned long	end_at = microsecond(&tv);
 	printf("Duration : %ldμs\n\n", end_at - start_at);
 
-	char*	error = hopt_strerror();
-	printf("%s\n", error);
-	free(error);
+	if (hopt_help_has_been_called())
+		return (0);
+	else if (count == -1)
+	{
+		char*	error = hopt_strerror();
+		printf("%s\n", error);
+		free(error);
+	}
 
 	printf("count: %d\n", options.count);
 	printf("number: %d\n", options.number);

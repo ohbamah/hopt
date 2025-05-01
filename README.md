@@ -1,4 +1,4 @@
-## Installation
+## Installation (limited)
 
 ### Linux
 
@@ -48,17 +48,7 @@ All-In-One:
 
 ### Windows 10/11
 
-To install repository and requirements (in the releases section):
-
-- Download the latest-stable version in the repo github page releases section.
-- Run .\WindowsHOPT\1-ChocoInstall.bat | To install Chocolatey.
-- Run .\WindowsHOPT\2-Requirements.bat | To install git, clang and make.
-- Go to the directory where you want to have the repo and run .\WindowsHOPT\3-CloneGit.bat | To clone repo.
-
-To copy HOPT to the include Clang/LLVM path (not working with MSVC):
-
-- Run .\WindowsHOPT\4-LLVMPATH.bat
-
+git clone with choco or install the latest release and include it in your project.
 
 ## FAQ
 
@@ -115,18 +105,15 @@ int main(int ac, char** av)
 {
     t_opt  options = {0};
 
-    hopt_allow_undef(); // Allow undefined options
-    hopt_allow_redef(TRUE); // Allow options redefinition (with overwriting or not)
-    hopt_end_on_arg(); // End parsing when a non-option argument appears
-    hopt_disable_sort(); // Disable AV sorting
-
     hopt_add_option("-name", 1, HOPT_TYPE_STR, &options.name, "Name of the subject.");
     hopt_add_option("c=-count=n", 1, HOPT_TYPE_INT, &options.count, "Max count possible.");
     /*
       ...
     */
     int count = hopt(ac, av); // Main function
-    if (count == -1)
+    if (hopt_help_has_been_called())
+        return (0);
+    else if (count == -1)
     {
         char*   error = hopt_strerror();
         printf("%s\n", error);

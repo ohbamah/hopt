@@ -28,7 +28,7 @@
 int				hopt_nerr = HOPT_SUCCESS;		// extern global var in 'hopt.h'
 char			hopt_cerr[HOPT_MAX_SSTR_SIZE] = {0};// extern global var in 'hopt.h'
 
-char			hopt_help_called_v = FALSE;
+char			hopt_help_has_been_called_v = FALSE;
 
 int				hopt_fcmd = HOPT_NOCMD;
 char			hopt_ncmd[HOPT_MAX_SSTR_SIZE] = {0};
@@ -260,9 +260,9 @@ hopt_subcmd(char* cmd)
 }
 
 char
-hopt_help_called(void)
+hopt_help_has_been_called(void)
 {
-	return (hopt_help_called_v);
+	return (hopt_help_has_been_called_v);
 }
 
 char*

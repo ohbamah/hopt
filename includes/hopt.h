@@ -31,7 +31,7 @@
 	/*                    */
 	/**********************/
 
-# define HOPT_VERSION	110
+# define HOPT_VERSION	120
 
 # ifndef HOPT_MAX_SSTR_SIZE
 #  define HOPT_MAX_SSTR_SIZE	16
@@ -88,8 +88,8 @@
 	/*******************/
 
 # define HOPT_NOCMD			0
-# define HOPT_THERE_IS_PCMD	1
-# define HOPT_THERE_IS_NCMD	2
+//# define HOPT_THERE_IS_PCMD	1
+//# define HOPT_THERE_IS_NCMD	2
 
 	/*******************/
 	/*                 */
@@ -125,23 +125,23 @@ extern int		hopt_nerr;
 // The option that refers to the error stored in 'hopt_nerr'
 extern char		hopt_cerr[HOPT_MAX_SSTR_SIZE];
 
-extern char		hopt_help_called_v;
+extern char		hopt_help_has_been_called_v;
 
 // Code to specify if there is a command before or/and after
 // Working progress
-extern int		hopt_fcmd;
+//extern int		hopt_fcmd;
 
 // The command that refers to the next command (if exists)
 // Working progress
-extern char		hopt_ncmd[HOPT_MAX_SSTR_SIZE];
+//extern char		hopt_ncmd[HOPT_MAX_SSTR_SIZE];
 
 // The current command (if exists)
 // Working progress
-extern char		hopt_ccmd[HOPT_MAX_SSTR_SIZE];
+//extern char		hopt_ccmd[HOPT_MAX_SSTR_SIZE];
 
 // The command that refers to the previous command (if exists)
 // Working progress
-extern char		hopt_pcmd[HOPT_MAX_SSTR_SIZE];
+//extern char		hopt_pcmd[HOPT_MAX_SSTR_SIZE];
 
 	/*
 		CORE for HOPT
@@ -163,6 +163,7 @@ void	hopt_free(void);
 // @param argc Count of option's arguments
 // @param flag HOPT flag
 // @param ... Type of each option's argument(s)
+// @param desc After the variadic parameters, you can define the option description (or NULL).
 //
 // - if (flag == HOPT_TYPE_*):	Address in memory to fill (void*)
 //
@@ -198,7 +199,7 @@ void	hopt_allow_redef(char overwrite);
 // Stop parsing on first non-option argument
 void	hopt_end_on_arg(void);
 // Return 1 if the user has called the help option, otherwise return 0
-char	hopt_help_called(void);
+char	hopt_help_has_been_called(void);
 
 // Automatically show help menu if there is any undefined option
 //

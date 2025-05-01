@@ -1,7 +1,0 @@
-{
-	"files.associations": {
-		"stdio.h": "c",
-		"hopt.h": "c",
-		"__hopt_.h": "c"
-	}
-}

@@ -53,7 +53,7 @@ git clone with choco or install the latest release and include it in your projec
 ## FAQ
 
 #### Is HOPT more faster than argp ?
-Yes it is a little faster than argp on average.
+Yes it is a little faster than argp on average, but it all depends on how you will use it. It's proportionally.
 
 #### Is HOPT easier to use than argp ?
 Of course! Just take a look at the "Usage/Examples" section below.

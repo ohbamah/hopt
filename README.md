@@ -123,8 +123,8 @@ int main(int ac, char** av)
         */
         return (1);
     }
-    ac -= count;
-    av += count; // If count != 1, count will be equal to the number of arguments (which are options) to be skipped. Useful only if 'hopt_disable_sort()' has not been called.
+    ac -= (count + 1);
+    av += (count + 1); // If count != 1, count will be equal to the number of arguments (which are options) to be skipped. Useful only if 'hopt_disable_sort()' has not been called.
     /*
         Rest of the program...
     */

@@ -84,7 +84,7 @@
 
 # define i_hopt_flags			hopt_flags[hopt_current_state]
 
-# define hopt_g_fd				hopt_global_state.fd
+# define hopt_g_fdopened		hopt_global_state.fdopened
 # define hopt_g_file			hopt_global_state.file
 # define hopt_g_disable_sort	hopt_global_state.disable_sort_v
 # define hopt_g_program_desc	hopt_global_state.program_desc
@@ -119,8 +119,8 @@ typedef struct hopt
 
 typedef struct hopt_global_state
 {
+	BOOL	fdopened;
 	BOOL	disable_sort_v;
-	int		fd;
 	FILE*	file;
 	char*	program_desc;
 }	t_hopt_global_state;
@@ -176,7 +176,7 @@ void
 __hopt_generate_help_menu(t_hopt_state* hopt_restrict state);
 void
 __hopt_find_missing_mandatory(t_hopt* hopt_restrict h);
-void
+int
 __hopt_intern_print_help_menu(int, char**, char* cmd);
 
 #endif

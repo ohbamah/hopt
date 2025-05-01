@@ -36,7 +36,7 @@ char			hopt_ccmd[HOPT_MAX_SSTR_SIZE] = {0};
 char			hopt_pcmd[HOPT_MAX_SSTR_SIZE] = {0};
 
 char**				hopt_flags = NULL;
-t_hopt_global_state	hopt_global_state = {0, .fd = 1};
+t_hopt_global_state	hopt_global_state = {0};
 t_hopt_state		hopt_default_state = {0};
 t_hopt_state*		hopt_state = &hopt_default_state;
 unsigned int		hopt_c_states = 0;
@@ -141,6 +141,8 @@ hopt_free(void)
 	}
 	if (hopt_state != &hopt_default_state)
 		free(hopt_state);
+	if (hopt_g_fdopened == TRUE && hopt_g_file != NULL)
+		fclose(hopt_g_file);
 	free(hopt_flags);
 }
 
@@ -288,11 +290,17 @@ hopt_help_menu(char* cmd)
 
 void	hopt_set_fd(int fd)
 {
-	hopt_g_fd = fd;
+	if (hopt_g_fdopened && hopt_g_file)
+		fclose(hopt_g_file);
+	hopt_g_fdopened = TRUE;
+	hopt_g_file = fdopen(fd, "w");
 }
 
 void	hopt_set_file(FILE* file)
 {
+	if (hopt_g_fdopened && hopt_g_file)
+		fclose(hopt_g_file);
+	hopt_g_fdopened = FALSE;
 	hopt_g_file = file;
 }
 
@@ -309,10 +317,18 @@ void	hopt_help_option(char* aliases, int automatic, int flagswhen)
 inline
 void	hopt_print_help_menu(char* cmd)
 {
+	BOOL	t = FALSE;
+
 	if (hopt_g_file == NULL)
-		dprintf(hopt_g_fd, "%s\n", hopt_help_menu(cmd));
-	else
-		fprintf(hopt_g_file, "%s\n", hopt_help_menu(cmd));
+	{
+		hopt_g_file = fdopen(1, "w");
+		t = TRUE;
+	}
+	if (hopt_g_file == NULL)
+		return ;
+	fprintf(hopt_g_file, "%s\n", hopt_help_menu(cmd));
+	if (t == TRUE)
+		fclose(hopt_g_file);
 }
 
 void

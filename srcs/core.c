@@ -348,13 +348,14 @@ __hopt_find_missing_mandatory(t_hopt* hopt_restrict h)
 }
 
 inline
-void
+int
 __hopt_intern_print_help_menu(int __a, char** __b, char* cmd)
 {
 	(void)__a;
 	(void)__b;
 	hopt_help_has_been_called_v = TRUE;
 	hopt_print_help_menu(cmd);
+	return (0);
 }
 
 static inline

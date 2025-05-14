@@ -1,4 +1,4 @@
-[documentation](https://hopt-doc.fr)
+[documentation here](https://hopt-doc.fr)
 
 ## Installation (limited)
 

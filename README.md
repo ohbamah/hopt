@@ -1,3 +1,5 @@
+[documentation](https://hopt-doc.fr)
+
 ## Installation (limited)
 
 ### Linux

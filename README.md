@@ -2,55 +2,23 @@
 
 ## Installation (limited)
 
-### Linux
-
-To install requirements and repository:
+### Linux/MacOS
 
 ```bash
-  apt-get install -y git clang make
-  git clone https://github.com/ohbamah/hopt.git
-```
-
-To copy HOPT to the include path (Make sure you have root access and run this from the root of the repo):
-
-```bash
-  sudo cp ./libhopt.a /lib/ || sudo cp ./libhopt.a /usr/lib/
-  sudo cp ./includes/hopt.h /usr/include/
-```
-
-All-In-One:
-
-```bash
-  git clone https://github.com/ohbamah/hopt.git && cd ./hopt/ && make && sudo cp ./libhopt.a /lib/ && sudo cp ./includes/hopt.h /usr/include/ && cd .. ; rm ./hopt -rf
-```
-
-### MacOS
-
-To install requirements and repository:
-
-```bash
-  brew install git clang make
-  git clone https://github.com/ohbamah/hopt.git
-```
-
-To copy HOPT to the include path (Make sure you have root access and run this from the root of the repo):
-
-```bash
-  sudo mkdir -p /usr/local/lib/
-  sudo cp ./libhopt.a /usr/local/lib/
-  sudo mkdir -p /usr/local/include/
-  sudo cp ./includes/hopt.h /usr/local/inlude/
-```
-
-All-In-One:
-
-```bash
-  sudo mkdir -p /usr/local/lib/ && sudo mkdir -p /usr/local/include/ && git clone https://github.com/ohbamah/hopt.git && cd ./hopt/ && make &&  sudo cp ./libhopt.a /usr/local/lib/ && sudo cp ./includes/hopt.h /usr/local/inlude/ && cd .. ; rm ./hopt -rf
+  wget https://github.com/ohbamah/hopt/releases/download/LatestLinux/libhopt.zip
 ```
 
 ### Windows 10/11
 
-git clone with choco or install the latest release and include it in your project.
+```bash
+  curl -O https://github.com/ohbamah/hopt/releases/download/LatestWindows/libhopt.zip
+```
+
+or
+
+```bash
+  Invoke-WebRequest https://github.com/ohbamah/hopt/releases/download/LatestWindows/libhopt.zip -OutFile libhopt.zip
+```
 
 ## FAQ
 

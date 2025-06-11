@@ -52,6 +52,7 @@ LMAKE = @make --no-print-directory -C
 SRCS =	./srcs/hopt.c \
 		./srcs/lst.c \
 		./srcs/utils.c \
+		./srcs/helper.c \
 		./srcs/core.c
 
 OBJS_DIR = .objs
@@ -82,13 +83,13 @@ $(OBJS_DIR)/%.obj: %.c
 
 clean:
 	@echo "$(BOLD)$(RED)"
-	rm $(OBJS_DIR) -rf
+	rm -rf $(OBJS_DIR)
 	@echo "$(CLASSIC)"
 
 fclean: clean
 	@echo "$(BOLD)$(RED)"
-	rm $(LIBNAME) -f
-	rm $(NAME) -f
+	rm -f $(LIBNAME)
+	rm -f $(NAME)
 	@echo "$(BOLD)$(GREEN)Tout a été supprimé... 🗑️\n$(CLASSIC)"
 
 re: fclean all

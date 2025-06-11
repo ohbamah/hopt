@@ -246,7 +246,7 @@ FINDER(t_hopt* hopt_restrict h)
 							if (h->f.strso == FALSE && FINDER_LONG_CMP(&h->av[i][1], alias[m]))/*!strcmp(&h->av[i][1], alias[m]))*/
 							{
 								int	tmp_i = i;
-								if (i_hopt_flags[n] == FALSE || (i_hopt_redef_allowed == TRUE && i_hopt_redef_overwrt == TRUE))
+								if (i_hopt_flags[n] == FALSE || itCanBeOverwritable(n))
 								{
 									tmp_i = FINDER_WRITE(h, i, 1, n);
 									if (tmp_i == -1)
@@ -262,7 +262,7 @@ FINDER(t_hopt* hopt_restrict h)
 							{
 								if (h->oac > 0 && (h->av[i][j + 1] != '\0' && (h->av[i][j + 1] != '=' && h->oac == 1)))
 									FINDER_ERROR(h, HOPT_BADSORDER, i, j);
-								if (i_hopt_flags[n] == FALSE || (i_hopt_redef_allowed == TRUE && i_hopt_redef_overwrt == TRUE))
+								if (i_hopt_flags[n] == FALSE || itCanBeRedefOvwr(n))
 									if (FINDER_WRITE(h, i, j, n) == -1)
 										FINDER_ERROR(h, HOPT_CBERROR, i, j);
 								if (i_hopt_flags[n] == FALSE && j == 1)
@@ -275,9 +275,9 @@ FINDER(t_hopt* hopt_restrict h)
 						free(alias[m]);
 						++m;
 					}
-					if (i_hopt_flags[n] == TRUE && h->f.found == TRUE && i_hopt_redef_allowed == FALSE)
+					if (i_hopt_flags[n] == TRUE && h->f.found == TRUE && !itCanBeRedefined(n))
 						FINDER_ERROR(h, HOPT_REDEFINED, h->f.last_i, j);
-					if (h->f.found == TRUE && h->f.error == FALSE && (i_hopt_flags[n] == FALSE || (i_hopt_redef_allowed == TRUE && i_hopt_redef_overwrt == TRUE && i_hopt_flags[n] == TRUE)))
+					if (h->f.found == TRUE && h->f.error == FALSE && (i_hopt_flags[n] == FALSE || (itCanBeOverwritable(n) && i_hopt_flags[n] == TRUE)))
 					{
 						if (hopt_g_disable_sort == FALSE)
 							hopt_add_back(&h->f.head, hopt_new_node(h->f.last_i, h->oac));

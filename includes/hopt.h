@@ -79,6 +79,8 @@
 # define HOPT_FLCB			7	// Set callback (incompatible with HOPT_TYPE_*)
 
 # define HOPT_FLMA			16	// Set an option as mandatory
+# define HOPT_FLSEQ			32	// Set an option redefinable
+# define HOPT_FLFLOW		64	// Set an redefinable option overwritable
 # define HOPT_FLAGS_LAST	HOPT_FLMA
 
 	/*******************/

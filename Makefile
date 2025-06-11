@@ -60,7 +60,7 @@ OBJS = $(SRCS:%.c=$(OBJS_DIR)/%.obj)
 
 DEPS = $(OBJS:%.obj=%.d)
 
-CFLAGS = -Wall -Wextra -O3 -fPIE -MMD -g3 #-Wno-stringop-truncation
+CFLAGS = -Wall -Wextra -O3 -fPIE -MMD -g3 #-fsanitize=address -Wno-stringop-truncation
 
 INCLUDES = -I. -I./includes/
 

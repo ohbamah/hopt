@@ -154,7 +154,7 @@ FINDER_WRITE(t_hopt* hopt_restrict h, unsigned int /*av index*/ idx, unsigned in
 
 	if (i_hopt_maps[opt_idx].mandatory == TRUE && i_hopt_flags[opt_idx] == FALSE)
 		++h->f.mandatory_count;
-	if ((i_hopt_maps[opt_idx].flag & 0xF) != HOPT_FLCB)
+	if ((i_hopt_maps[opt_idx].flag & 0xF) != HOPT_TYPE_CB)
 	{
 		if (h->oac == 1)
 		{
@@ -222,7 +222,7 @@ FINDER(t_hopt* hopt_restrict h)
 			if (h->av[i][1] != '-' && strnlen(&h->av[i][1], 2) > 1)
 				h->f.strso = TRUE;
 			j = 1;
-			while (h->av[i] && (h->av[i][j] && h->av[i][j] != '=') && is_an_option && h->f.error == FALSE)
+			while (h->f.error == FALSE && h->av[i] && (h->av[i][j] && h->av[i][j] != '=') && is_an_option)
 			{
 				n = 0;
 				h->f.found = FALSE;
@@ -238,7 +238,7 @@ FINDER(t_hopt* hopt_restrict h)
 						break ;
 					}
 					m = 0;
-					while (alias[m])
+					while (h->f.error == FALSE && alias[m])
 					{
 						if (h->f.found == FALSE && h->f.error == FALSE)
 						{
@@ -288,7 +288,7 @@ FINDER(t_hopt* hopt_restrict h)
 				}
 				if (h->f.found == FALSE && h->f.error == FALSE && i_hopt_undef_allowed == FALSE)
 					FINDER_ERROR(h, HOPT_UNDEFINED, i, j);
-				else if (h->av[i])
+				else if (h->f.error == FALSE && h->av[i])
 					is_an_option = h->av[i][0] == '-' && strnlen(&h->av[i][0], 2) > 1;
 				++j;
 			}

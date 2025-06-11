@@ -76,9 +76,12 @@
 # define _HOPT_TYPE_NUMLAST	HOPT_TYPE_DOUBLE
 # define _HOPT_TYPE_LAST	_HOPT_TYPE_NUMLAST
 
-# define HOPT_FLCB			7	// Set callback (incompatible with HOPT_TYPE_*)
+# define HOPT_FLCB			HOPT_TYPE_CB	// Set callback (incompatible with HOPT_TYPE_*)
+# define HOPT_TYPE_CB		7				// Set callback
 
 # define HOPT_FLMA			16	// Set an option as mandatory
+# define HOPT_FLSEQ			32
+// # define HOPT_FLFLOW		64
 # define HOPT_FLAGS_LAST	HOPT_FLMA
 
 	/*******************/

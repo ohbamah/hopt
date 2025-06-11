@@ -179,4 +179,11 @@ __hopt_find_missing_mandatory(t_hopt* hopt_restrict h);
 int
 __hopt_intern_print_help_menu(int, char**, char* cmd);
 
+int
+itCanBeRedefOvwr(int n);
+int
+itCanBeRedefined(int n);
+int
+itCanBeOverwritable(int n);
+
 #endif

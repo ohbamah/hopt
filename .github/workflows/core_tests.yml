@@ -1,0 +1,27 @@
+name: Compilable on Linux
+
+on:
+  push:
+  pull_request:
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: checkout
+      uses: actions/checkout@v4
+
+    - name: install dependencies
+      run: |
+        sudo apt-get update
+        sudo apt-get install -y clang make
+
+    - name: compilation
+      run: make re
+
+    - name: core tests
+      run: |
+        cd ./tests/
+        chmod +x hopt_tests tester.sh
+        sh tester.sh

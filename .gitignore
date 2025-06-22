@@ -1,3 +1,4 @@
 ./libhopt.a
 ./.objs/
 ./a.out
+./tests/hopt_tests.dSYM/

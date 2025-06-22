@@ -22,6 +22,8 @@ jobs:
 
     - name: core tests
       run: |
+        make
         cd ./tests/
+        make
         chmod +x hopt_tests tester.sh
         bash tester.sh

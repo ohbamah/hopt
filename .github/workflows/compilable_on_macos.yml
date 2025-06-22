@@ -1,0 +1,21 @@
+name: Compilable on MacOS
+
+on:
+  push:
+  pull_request:
+
+jobs:
+  test:
+    runs-on: macos-latest
+
+    steps:
+    - name: checkout
+      uses: actions/checkout@v4
+
+    - name: install dependencies (if not)
+      run: |
+        brew install update
+        brew install -y clang make
+
+    - name: test
+      run: make re

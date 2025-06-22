@@ -26,17 +26,17 @@
 #*    COULEURS    *#
 # ################ #
 
-CLASSIC	= \e[0m
-WHITE	= \e[38;2;238;232;213m
-BOLD	= \e[1m
-# BLACK	= \e[38;2;0;0;0m
-BLACK	= \e[30m
-RED   	= \e[31m
-GREEN  	= \e[32m
-BLUE 	= \e[38;2;0;36;148m
-PURPLE 	= \e[38;2;211;54;130m
-CYAN   	= \e[36m
-YELLOW 	= \e[38;2;250;189;0m
+CLASSIC	= \033[0m
+WHITE	= \033[38;2;238;232;213m
+BOLD	= \033[1m
+# BLACK	= \033[38;2;0;0;0m
+BLACK	= \033[30m
+RED   	= \033[31m
+GREEN  	= \033[32m
+BLUE 	= \033[38;2;0;36;148m
+PURPLE 	= \033[38;2;211;54;130m
+CYAN   	= \033[36m
+YELLOW 	= \033[38;2;250;189;0m
 
 # ############### #
 #*   VARIABLES   *#

@@ -12,9 +12,5 @@ jobs:
     - name: checkout
       uses: actions/checkout@v4
 
-    - name: install dependencies (if not)
-      run: |
-        brew install clang make
-
     - name: test
       run: make re

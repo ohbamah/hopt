@@ -40,12 +40,12 @@ ERROR=0
 
 for i in "${!TESTS[@]}"; do
 	#if expr $((i)) "<" 1; then
-		echo "${YELLOW}${BOLD}Test $((i+1)) : ${CLASSIC}${YELLOW}${TESTS[i]}${CLASSIC}"
+		echo -e "${YELLOW}${BOLD}Test $((i+1)) : ${CLASSIC}${YELLOW}${TESTS[i]}${CLASSIC}"
 		${TESTS[i]} > out.txt
 		if diff out.txt ./nt/$((i+1)).txt; then
-			echo "${GREEN}${BOLD}SUCCESS!${CLASSIC}\n"
+			echo -e "${GREEN}${BOLD}SUCCESS!${CLASSIC}\n"
 		else
-			echo "${RED}${BOLD}FAILED!${CLASSIC}\n"
+			echo -e "${RED}${BOLD}FAILED!${CLASSIC}\n"
 			ERROR=1
 		fi
 	#fi

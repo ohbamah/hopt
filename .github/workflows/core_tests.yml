@@ -1,4 +1,4 @@
-name: Compilable on Linux
+name: Core tests
 
 on:
   push:

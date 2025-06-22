@@ -1,16 +1,16 @@
 #!/bin/bash
 
-CLASSIC="\e[0m"
-WHITE="\e[38;2;238;232;213m"
-BOLD="\e[1m"
-#BLACK=\e[38;2;0;0;0m
-BLACK="\e[30m"
-RED="\e[31m"
-GREEN="\e[32m"
-BLUE="\e[38;2;0;36;148m"
-PURPLE="\e[38;2;211;54;130m"
-CYAN="\e[36m"
-YELLOW="\e[38;2;250;189;0m"
+CLASSIC="\033[0m"
+WHITE="\033[38;2;238;232;213m"
+BOLD="\033[1m"
+#BLACK=\033[38;2;0;0;0m
+BLACK="\033[30m"
+RED="\033[31m"
+GREEN="\033[32m"
+BLUE="\033[38;2;0;36;148m"
+PURPLE="\033[38;2;211;54;130m"
+CYAN="\033[36m"
+YELLOW="\033[38;2;250;189;0m"
 
 TESTS=(
 	"./hopt_tests -fp 2 1 4 5 6 3 --count 2 random_arg1 -c 3 random_arg2 --name "test_name" -test "str1" "str2" "str3""
@@ -36,6 +36,8 @@ TESTS=(
 	"./hopt_tests -count -p 1 2 3 4 5 6 -test "First" "Second" "Third""
 )
 
+ERROR=0
+
 for i in "${!TESTS[@]}"; do
 	#if expr $((i)) "<" 1; then
 		echo -e "${YELLOW}${BOLD}Test $((i+1)) : ${CLASSIC}${YELLOW}${TESTS[i]}${CLASSIC}"
@@ -44,7 +46,10 @@ for i in "${!TESTS[@]}"; do
 			echo -e "${GREEN}${BOLD}SUCCESS!${CLASSIC}\n"
 		else
 			echo -e "${RED}${BOLD}FAILED!${CLASSIC}\n"
+			ERROR=1
 		fi
 	#fi
 done
 rm -rf out.txt
+
+exit $ERROR

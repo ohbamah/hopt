@@ -1,0 +1,27 @@
+name: Compilable on Windows
+
+on:
+  push:
+  pull_request:
+
+jobs:
+  test:
+    runs-on: windows-latest
+
+    steps:
+    - name: checkout
+      uses: actions/checkout@v4
+
+    - name: Setup MSYS2 (for make and clang)
+      uses: msys2/setup-msys2@v2
+      with:
+        msystem: MINGW64
+        update: true
+        install: >-
+          mingw-w64-x86_64-clang
+          mingw-w64-x86_64-make
+          make
+
+    - name: Build with make
+      shell: msys2 {0}
+      run: make re

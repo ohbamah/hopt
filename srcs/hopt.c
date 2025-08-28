@@ -113,6 +113,8 @@ hopt_create_map(char* names, int argc, int flags, va_list* va)
 
 // Create new option mapping
 //
+// If you use HOPT_FLCB flag, you need to handle some errors, like bad arg count, yourself
+//
 // @param name Option aliases (ex: "c=-count=j"), option '-c' has 2 others alises : '--count' and '-j'
 // @param argc Count of option's arguments
 // @param mem Address in memory to fill

@@ -189,6 +189,8 @@ FINDER_WRITE(t_hopt* hopt_restrict h, unsigned int /*av index*/ idx, unsigned in
 	{
 		if ((i_hopt_maps[opt_idx].cb)(h->oac, &h->av[idx], i_hopt_maps[opt_idx].cb_arg) == -1)
 			return (-1);
+		h->n_parsed += h->oac;
+		idx += h->oac;
 	}
 	return (idx);
 }

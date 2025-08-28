@@ -173,7 +173,7 @@ SORT(int ac, /*const*/ char** av, t_hopt_sort* head);
 void
 FINDER(t_hopt* hopt_restrict h);
 int
-__oac_calcul_variadic_count(t_hopt* hopt_restrict h, unsigned int idx);
+__oac_calcul_variadic_count(t_hopt* hopt_restrict h, unsigned int idx, unsigned int c);
 void
 __hopt_generate_help_menu(t_hopt_state* hopt_restrict state);
 void

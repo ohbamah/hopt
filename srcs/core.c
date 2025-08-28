@@ -247,7 +247,7 @@ FINDER(t_hopt* hopt_restrict h)
 							h->f.last_i = i;
 							if (h->oac == HOPT_VARIADIC_ARGUMENTS)
 							{
-								int	variadic_oac = __oac_calcul_variadic_count(h, i);
+								int	variadic_oac = __oac_calcul_variadic_count(h, i, j);
 								h->oac = variadic_oac;
 							}
 							if (h->f.strso == FALSE && FINDER_LONG_CMP(&h->av[i][1], alias[m]))/*!strcmp(&h->av[i][1], alias[m]))*/
@@ -320,18 +320,22 @@ FINDER(t_hopt* hopt_restrict h)
 
 inline
 int
-__oac_calcul_variadic_count(t_hopt* hopt_restrict h, unsigned int /*av index*/ idx)
-{\
+__oac_calcul_variadic_count(t_hopt* hopt_restrict h, unsigned int /*av index */ idx, unsigned int /*av[X] index*/ c)
+{
 	int		i = 0;
-	int		index = ++idx;
+	int		index = idx;
 	BOOL	is_an_option = FALSE;
 
-	for ( ; i < __INT_MAX__ - 1 && h->av[index] ; )
+	if (h->f.strso && (h->av[index][c + 1] != '\0' && (h->av[index][c + 1] != '=' && h->oac == 1)))
+		return (0);
+	++index;
+	for ( ; i < __INT_MAX__ && h->av[index] ; )
 	{
 		is_an_option = h->av[index][0] == '-' && strnlen(&h->av[index][0], 2) > 1;
-		if (is_an_option)
-			return (i);
-		index = idx + ++i;
+		if (is_an_option || !h->av[index])
+			break ;
+		++index;
+		++i;
 	}
 	return (i);
 }

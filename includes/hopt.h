@@ -76,6 +76,7 @@
 # define _HOPT_TYPE_NUMLAST	HOPT_TYPE_DOUBLE
 # define _HOPT_TYPE_LAST	_HOPT_TYPE_NUMLAST
 
+// If you use HOPT_FLCB flag, you need to handle some errors, like bad arg count, yourself
 # define HOPT_FLCB			HOPT_TYPE_CB	// Set callback (incompatible with HOPT_TYPE_*)
 # define HOPT_TYPE_CB		7				// Set callback
 

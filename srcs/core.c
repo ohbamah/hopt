@@ -247,7 +247,7 @@ FINDER(t_hopt* hopt_restrict h)
 							h->f.last_i = i;
 							if (h->oac == HOPT_VARIADIC_ARGUMENTS)
 							{
-								int	variadic_oac = __oac_calcul_variadic_count(h, i); // No short options ?
+								int	variadic_oac = __oac_calcul_variadic_count(h, i);
 								h->oac = variadic_oac;
 							}
 							if (h->f.strso == FALSE && FINDER_LONG_CMP(&h->av[i][1], alias[m]))/*!strcmp(&h->av[i][1], alias[m]))*/

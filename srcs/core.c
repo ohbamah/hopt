@@ -170,7 +170,7 @@ FINDER_WRITE(t_hopt* hopt_restrict h, unsigned int /*av index*/ idx, unsigned in
 			++idx;
 			if (!h->av[idx])
 				FINDER_ERROR(h, HOPT_MISSOARGC, idx - 1, c);
-			while (h->av[idx] && j < h->oac) //? && h->f.error == FALSE
+			while (h->av[idx] && j < (unsigned int)h->oac) //? && h->f.error == FALSE
 			{
 				if ((!h->av[idx + 1] && j < h->oac - 1U) || (h->av[idx][0] == '-' && strnlen(h->av[idx], 2) > 1 && !isdigit(h->av[idx][1])))
 					FINDER_ERROR(h, HOPT_MISSOARGC, tmp, c);
@@ -245,6 +245,11 @@ FINDER(t_hopt* hopt_restrict h)
 						if (h->f.found == FALSE && h->f.error == FALSE)
 						{
 							h->f.last_i = i;
+							if (h->oac == HOPT_VARIADIC_ARGUMENTS)
+							{
+								int	variadic_oac = __oac_calcul_variadic_count(h, i);
+								h->oac = variadic_oac;
+							}
 							if (h->f.strso == FALSE && FINDER_LONG_CMP(&h->av[i][1], alias[m]))/*!strcmp(&h->av[i][1], alias[m]))*/
 							{
 								int	tmp_i = i;
@@ -311,6 +316,24 @@ FINDER(t_hopt* hopt_restrict h)
 		}
 		++i;
 	}
+}
+
+inline
+int
+__oac_calcul_variadic_count(t_hopt* hopt_restrict h, unsigned int /*av index*/ idx)
+{\
+	int		i = 0;
+	int		index = ++idx;
+	BOOL	is_an_option = FALSE;
+
+	for ( ; i < __INT_MAX__ - 1 && h->av[index] ; )
+	{
+		is_an_option = h->av[index][0] == '-' && strnlen(&h->av[index][0], 2) > 1;
+		if (is_an_option)
+			return (i);
+		index = idx + ++i;
+	}
+	return (i);
 }
 
 void

@@ -111,7 +111,7 @@ typedef struct hopt
 {
 	int				ac;			// Program arguments count
 	char**			av;			// Program arguments value
-	unsigned int	oac;		// Option Argument Count
+	int				oac;		// Option Argument Count
 	unsigned int	offset;		// Offset in the buffer
 	unsigned int	n_parsed;	// Count of element parsed (included options' arguments)
 	t_FINDER		f;			// FINDER(...) infos
@@ -172,6 +172,8 @@ int
 SORT(int ac, /*const*/ char** av, t_hopt_sort* head);
 void
 FINDER(t_hopt* hopt_restrict h);
+int
+__oac_calcul_variadic_count(t_hopt* hopt_restrict h, unsigned int idx);
 void
 __hopt_generate_help_menu(t_hopt_state* hopt_restrict state);
 void

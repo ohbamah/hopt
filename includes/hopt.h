@@ -53,6 +53,14 @@
 # define HOPT_MISSOPT				64	// If a mandatory option is not present
 # define HOPT_BADTYPE_NUM			128	// Bad option argument type (not numeric)
 
+	/***********************/
+	/*                     */
+	/*    HOPT SPECIALS    */
+	/*                     */
+	/***********************/
+
+# define HOPT_VARIADIC_ARGUMENTS	-1
+
 	/********************/
 	/*                  */
 	/*    HOPT FLAGS    */

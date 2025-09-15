@@ -81,20 +81,20 @@ hopt_map_check_flags(t_hopt_map* map, int flags, va_list* va)
 {
 	int	type = flags & 0xF;
 	if (type >= _HOPT_TYPE_BEGIN && type <= _HOPT_TYPE_LAST)
-		(*map).mem = va_arg(*va, void*);
+		map->mem = va_arg(*va, void*);
 	else if (type == HOPT_FLCB)
 	{
-		(*map).mem = NULL;
-		(*map).cb = va_arg(*va, t_hopt_callback);
-		(*map).cb_arg = va_arg(*va, void*);
+		map->mem = NULL;
+		map->cb = va_arg(*va, t_hopt_callback);
+		map->cb_arg = va_arg(*va, void*);
 	}
 	if (flags & HOPT_FLMA)
 	{
-		(*map).mandatory = TRUE;
+		map->mandatory = TRUE;
 		++hopt_c_mandatory;
 	}
 	else
-		(*map).mandatory = FALSE;
+		map->mandatory = FALSE;
 }
 
 static
@@ -247,7 +247,7 @@ hopt_group(char* group_name)
 }
 
 void
-hopt_subcmd(char* cmd)
+hopt_subcmd(char* cmd, t_hopt_subcommand_callback cb, void* arg, void** returns)
 {
 	++hopt_c_states;
 	if (hopt_state == &hopt_default_state)
@@ -259,8 +259,10 @@ hopt_subcmd(char* cmd)
 	else
 		hopt_state = realloc(hopt_state, (hopt_c_states + 1) * sizeof(t_hopt_state));
 	memset(&hopt_state[hopt_c_states], 0, sizeof(t_hopt_state));
-	hopt_group_title = NULL;
 	hopt_cmd_name = cmd;
+	hopt_subcommand_cb = cb;
+	hopt_subcommand_returns = returns;
+	hopt_subcommand_arg = arg;
 }
 
 char
@@ -279,12 +281,12 @@ hopt_help_menu(char* cmd)
 	}
 	for (unsigned int i = 1 ; i <= hopt_c_states ; ++i)
 	{
-		t_hopt_state*	tmp = &hopt_state[i];
-		if (!strcmp(cmd, tmp->_hopt_cmd_name))
+		t_hopt_state*	state = &hopt_state[i];
+		if (!strcmp(cmd, state->_hopt_cmd_name))
 		{
-			if (tmp->_hopt_help_menu_str == NULL)
-				__hopt_generate_help_menu(tmp);
-			return (tmp->_hopt_help_menu_str);
+			if (state->_hopt_help_menu_str == NULL)
+				__hopt_generate_help_menu(state);
+			return (state->_hopt_help_menu_str);
 		}
 	}
 	return (NULL);

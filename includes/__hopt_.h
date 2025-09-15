@@ -54,33 +54,41 @@
 
 //# define CASSERT(condition) ((void)sizeof(char[-!(condition)]))
 
-# define hopt_end_on_arg_v		hopt_state[hopt_c_states]._hopt_end_on_arg_v
-# define hopt_undef_allowed		hopt_state[hopt_c_states]._hopt_undef_allowed
-# define hopt_redef_allowed		hopt_state[hopt_c_states]._hopt_redef_allowed
-# define hopt_redef_overwrt		hopt_state[hopt_c_states]._hopt_redef_overwrt
-# define hopt_auto_help_v		hopt_state[hopt_c_states]._hopt_auto_help_v
-# define hopt_maps				hopt_state[hopt_c_states]._hopt_maps
-# define hopt_c_maps			hopt_state[hopt_c_states]._hopt_c_maps
-# define hopt_c_mandatory		hopt_state[hopt_c_states]._hopt_c_mandatory
-# define hopt_help_menu_str		hopt_state[hopt_c_states]._hopt_help_menu_str
-# define hopt_program_path		hopt_state[hopt_c_states]._hopt_program_path
-# define hopt_cmd_name			hopt_state[hopt_c_states]._hopt_cmd_name
-# define hopt_help_flagsw		hopt_state[hopt_c_states]._hopt_help_flagsw
-# define hopt_group_title		hopt_state[hopt_c_states]._hopt_group_title
+# define hopt_end_on_arg_v			hopt_state[hopt_c_states]._hopt_end_on_arg_v
+# define hopt_undef_allowed			hopt_state[hopt_c_states]._hopt_undef_allowed
+# define hopt_redef_allowed			hopt_state[hopt_c_states]._hopt_redef_allowed
+# define hopt_redef_overwrt			hopt_state[hopt_c_states]._hopt_redef_overwrt
+# define hopt_auto_help_v			hopt_state[hopt_c_states]._hopt_auto_help_v
+# define hopt_maps					hopt_state[hopt_c_states]._hopt_maps
+# define hopt_c_maps				hopt_state[hopt_c_states]._hopt_c_maps
+# define hopt_c_mandatory			hopt_state[hopt_c_states]._hopt_c_mandatory
+# define hopt_help_menu_str			hopt_state[hopt_c_states]._hopt_help_menu_str
+# define hopt_program_path			hopt_state[hopt_c_states]._hopt_program_path
+# define hopt_cmd_name				hopt_state[hopt_c_states]._hopt_cmd_name
+# define hopt_help_flagsw			hopt_state[hopt_c_states]._hopt_help_flagsw
+# define hopt_group_title			hopt_state[hopt_c_states]._hopt_group_title
+# define hopt_subcommand_cb			hopt_state[hopt_c_states]._hopt_subcommand_cb
+# define hopt_subcommand_arg		hopt_state[hopt_c_states]._hopt_subcommand_arg
+# define hopt_subcommand_returns	hopt_state[hopt_c_states]._hopt_subcommand_returns
+# define hopt_subcommand_executed	hopt_state[hopt_c_states]._hopt_subcommand_executed
 
-# define i_hopt_end_on_arg_v	hopt_state[hopt_current_state]._hopt_end_on_arg_v
-# define i_hopt_undef_allowed	hopt_state[hopt_current_state]._hopt_undef_allowed
-# define i_hopt_redef_allowed	hopt_state[hopt_current_state]._hopt_redef_allowed
-# define i_hopt_redef_overwrt	hopt_state[hopt_current_state]._hopt_redef_overwrt
-# define i_hopt_auto_help_v		hopt_state[hopt_current_state]._hopt_auto_help_v
-# define i_hopt_maps			hopt_state[hopt_current_state]._hopt_maps
-# define i_hopt_c_maps			hopt_state[hopt_current_state]._hopt_c_maps
-# define i_hopt_c_mandatory		hopt_state[hopt_current_state]._hopt_c_mandatory
-# define i_hopt_help_menu_str	hopt_state[hopt_current_state]._hopt_help_menu_str
-# define i_hopt_program_path	hopt_state[hopt_current_state]._hopt_program_path
-# define i_hopt_cmd_name		hopt_state[hopt_current_state]._hopt_cmd_name
-# define i_hopt_help_flagsw		hopt_state[hopt_current_state]._hopt_help_flagsw
-# define i_hopt_group_title		hopt_state[hopt_current_state]._hopt_group_title
+# define i_hopt_end_on_arg_v		hopt_state[hopt_current_state]._hopt_end_on_arg_v
+# define i_hopt_undef_allowed		hopt_state[hopt_current_state]._hopt_undef_allowed
+# define i_hopt_redef_allowed		hopt_state[hopt_current_state]._hopt_redef_allowed
+# define i_hopt_redef_overwrt		hopt_state[hopt_current_state]._hopt_redef_overwrt
+# define i_hopt_auto_help_v			hopt_state[hopt_current_state]._hopt_auto_help_v
+# define i_hopt_maps				hopt_state[hopt_current_state]._hopt_maps
+# define i_hopt_c_maps				hopt_state[hopt_current_state]._hopt_c_maps
+# define i_hopt_c_mandatory			hopt_state[hopt_current_state]._hopt_c_mandatory
+# define i_hopt_help_menu_str		hopt_state[hopt_current_state]._hopt_help_menu_str
+# define i_hopt_program_path		hopt_state[hopt_current_state]._hopt_program_path
+# define i_hopt_cmd_name			hopt_state[hopt_current_state]._hopt_cmd_name
+# define i_hopt_help_flagsw			hopt_state[hopt_current_state]._hopt_help_flagsw
+# define i_hopt_group_title			hopt_state[hopt_current_state]._hopt_group_title
+# define i_hopt_subcommand_cb		hopt_state[hopt_current_state]._hopt_subcommand_cb
+# define i_hopt_subcommand_arg		hopt_state[hopt_current_state]._hopt_subcommand_arg
+# define i_hopt_subcommand_returns	hopt_state[hopt_current_state]._hopt_subcommand_returns
+# define i_hopt_subcommand_executed	hopt_state[hopt_current_state]._hopt_subcommand_executed
 
 # define i_hopt_flags			hopt_flags[hopt_current_state]
 
@@ -127,20 +135,24 @@ typedef struct hopt_global_state
 
 typedef struct hopt_state
 {
-/*bool*/char			_hopt_end_on_arg_v;
-/*bool*/char			_hopt_undef_allowed;
-/*bool*/char			_hopt_redef_allowed;
-/*bool*/char			_hopt_redef_overwrt;
-/*bool*/char			_hopt_auto_help_v;
-/*bool*/char			_hopt_256termcolor_v;
-		int				_hopt_help_flagsw;
-		char*			_hopt_help_menu_str;
-		char*			_hopt_program_path;
-		char*			_hopt_group_title;
-		char*			_hopt_cmd_name;
-		t_hopt_map*		_hopt_maps;
-		unsigned int	_hopt_c_maps;
-		unsigned int	_hopt_c_mandatory;
+/*bool*/char						_hopt_end_on_arg_v;
+/*bool*/char						_hopt_undef_allowed;
+/*bool*/char						_hopt_redef_allowed;
+/*bool*/char						_hopt_redef_overwrt;
+/*bool*/char						_hopt_auto_help_v;
+/*bool*/char						_hopt_256termcolor_v;
+		int							_hopt_help_flagsw;
+		char*						_hopt_help_menu_str;
+		char*						_hopt_program_path;
+		char*						_hopt_group_title;
+		char*						_hopt_cmd_name;
+		t_hopt_map*					_hopt_maps;
+		unsigned int				_hopt_c_maps;
+		unsigned int				_hopt_c_mandatory;
+		t_hopt_subcommand_callback	_hopt_subcommand_cb;
+		void**						_hopt_subcommand_returns;
+		void*						_hopt_subcommand_arg;
+		char						_hopt_subcommand_executed;
 }	t_hopt_state;
 
 extern /*bool*/char**		hopt_flags; // To check if an option is redefined

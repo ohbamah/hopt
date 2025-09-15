@@ -97,7 +97,6 @@
 # define hopt_g_fdopened		hopt_global_state.fdopened
 # define hopt_g_file			hopt_global_state.file
 # define hopt_g_disable_sort	hopt_global_state.disable_sort_v
-// # define hopt_g_program_desc	hopt_global_state.program_desc
 
 typedef struct hopt_sort
 {

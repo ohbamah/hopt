@@ -111,7 +111,8 @@
 	/*                 */
 	/*******************/
 
-typedef int (*t_hopt_callback)(int, char**, void*); //ac, av, cb_arg
+typedef int		(*t_hopt_callback)(int, char**, void*); //ac, av, cb_arg
+typedef void*	(*t_hopt_subcommand_callback)(void*); // cb_arg
 
 typedef struct hopt_map
 {
@@ -204,7 +205,7 @@ void	hopt_set_fd(int fd);
 void	hopt_set_file(FILE* file);
 # endif
 void	hopt_help_option(char* aliases, int automatic, int flagswhen);
-void	hopt_subcmd(char* cmd);
+void	hopt_subcmd(char* cmd, t_hopt_subcommand_callback cb, void* arg, void** returns);
 void	hopt_print_help_menu(char* cmd);
 // Undef allowed is not sorted, same for undef unallowed
 void	hopt_allow_undef(void);

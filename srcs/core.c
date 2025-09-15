@@ -205,6 +205,20 @@ FINDER_LONG_CMP(const char* av_i, char* alias)
 	return (strlen(av_i) - strlen(_strchr) == strlen(alias) && av_i[strlen(alias)] == '=');
 }
 
+inline
+void
+__execute_subcommand_if_exists()
+{
+	if (hopt_current_state > 0 && !i_hopt_subcommand_executed && i_hopt_subcommand_cb)
+	{
+		if (i_hopt_subcommand_returns)
+			*i_hopt_subcommand_returns = i_hopt_subcommand_cb(i_hopt_subcommand_arg);
+		else
+			i_hopt_subcommand_cb(i_hopt_subcommand_arg);
+		i_hopt_subcommand_executed = TRUE;
+	}
+}
+
 void
 FINDER(t_hopt* hopt_restrict h)
 {
@@ -250,7 +264,7 @@ FINDER(t_hopt* hopt_restrict h)
 								int	variadic_oac = __oac_calcul_variadic_count(h, i, j);
 								h->oac = variadic_oac;
 							}
-							if (h->f.strso == FALSE && FINDER_LONG_CMP(&h->av[i][1], alias[m]))/*!strcmp(&h->av[i][1], alias[m]))*/
+							if (h->f.strso == FALSE && FINDER_LONG_CMP(&h->av[i][1], alias[m]))
 							{
 								int	tmp_i = i;
 								if (i_hopt_flags[n] == FALSE || itCanBeOverwritable(n))
@@ -302,20 +316,22 @@ FINDER(t_hopt* hopt_restrict h)
 		}
 		else if (i_hopt_end_on_arg_v == TRUE && hopt_current_state == hopt_c_states)
 			break ;
-		else if (hopt_current_state < hopt_c_states)
+		else if (hopt_current_state <= hopt_c_states)
 		{
 			for (unsigned int cmt = 1 ; cmt <= hopt_c_states ; ++cmt)
 			{
 				if (!strcmp(h->av[i], hopt_state[cmt]._hopt_cmd_name))
 				{
+					__execute_subcommand_if_exists();
 					hopt_current_state = cmt;
-					i_hopt_flags = calloc(hopt_state[cmt]._hopt_c_maps, sizeof(BOOL));
+					i_hopt_flags = calloc(i_hopt_c_maps, sizeof(BOOL));
 					break;
 				}
 			}
 		}
 		++i;
 	}
+	__execute_subcommand_if_exists();
 }
 
 inline
@@ -347,7 +363,7 @@ __hopt_find_missing_mandatory(t_hopt* hopt_restrict h)
 	char**			s;
 	unsigned int	size;
 
-	for (unsigned int k = 0 ; k < hopt_c_states ; ++k)
+	for (unsigned int k = 0 ; k <= hopt_c_states ; ++k)
 	{
 		t_hopt_state*	tmp = &hopt_state[hopt_c_states];
 		for (unsigned int i = 0, j = 0 ; i < tmp->_hopt_c_maps ; ++i)
@@ -416,7 +432,7 @@ __hopt_generate_help_menu(t_hopt_state* hopt_restrict state)
 			state->_hopt_cmd_name ? " " : "",
 			state->_hopt_cmd_name ? state->_hopt_cmd_name : "",
 			" [OPTIONS...] ", "ARGS... ", endonarg_str, "\n",
-			hopt_g_program_desc == NULL ? "" : hopt_g_program_desc, "\n\n");
+			hopt_g_program_desc == NULL ? "" : hopt_g_program_desc, "\n");
 	unsigned int	lenmax = 0;
 	for (unsigned int i = 0 ; i < state->_hopt_c_maps ; ++i)
 	{

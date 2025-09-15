@@ -405,35 +405,24 @@ __hopt_intern_print_help_menu(int __a, char** __b, char* cmd)
 
 static inline
 void
-__hopt_genhm_group(t_hopt_state* hopt_restrict state, char** last_group, int i, unsigned int lenmax)
+__hopt_cathm_group(t_hopt_state* hopt_restrict state, char* category_name, unsigned int lenmax)
 {
-	*last_group = state->_hopt_maps[i].group;
-	int		buffersize = lenmax + strlen(*last_group) + 10;
+	int		buffersize = lenmax + strlen(category_name) + 10;
 	char*	tmp = state->_hopt_help_menu_str;
 	char*	line = malloc((buffersize + 1) * sizeof(char));
 	line[buffersize] = '\0';
-	snprintf(line, buffersize, "\e[1m\n  %-*s\e[0m\n", (int)lenmax, *last_group);
+	snprintf(line, buffersize, "\n\e[1m  %-*s\e[0m\n", (int)lenmax, category_name);
 	state->_hopt_help_menu_str = hopt_strjoin(state->_hopt_help_menu_str, line);
 	free(tmp);
 	free(line);
 }
 
-void
-__hopt_generate_help_menu(t_hopt_state* hopt_restrict state)
+unsigned int
+__hopt_calcul_lenmax_for_help_menu(t_hopt_state* hopt_restrict state)
 {
-	char*	endonarg_str = "";
-	char*	tmp;
-
-	if (state->_hopt_end_on_arg_v == FALSE)
-		endonarg_str = "[OPTIONS...]";
-	state->_hopt_help_menu_str =
-		hopt_strvajoin(10,
-			"Usage: ", basename(hopt_program_path),
-			state->_hopt_cmd_name ? " " : "",
-			state->_hopt_cmd_name ? state->_hopt_cmd_name : "",
-			" [OPTIONS...] ", "ARGS... ", endonarg_str, "\n",
-			hopt_g_program_desc == NULL ? "" : hopt_g_program_desc, "\n");
+	char*			tmp;
 	unsigned int	lenmax = 0;
+
 	for (unsigned int i = 0 ; i < state->_hopt_c_maps ; ++i)
 	{
 		if (state->_hopt_maps[i].desc != NULL)
@@ -454,32 +443,94 @@ __hopt_generate_help_menu(t_hopt_state* hopt_restrict state)
 			free(aliases);
 		}
 	}
-	char*	last_group = NULL;
+	if (hopt_c_states > 0 && !state->_hopt_cmd_name)
+	{
+		lenmax += strlen("SUB-COMMANDS:");
+		for (unsigned int i = 1 ; i <= hopt_c_states ; ++i)
+			lenmax += strlen(hopt_state[i]._hopt_cmd_name);
+	}
+	return (lenmax);
+}
+
+int
+__hopt_first_option_present(t_hopt_state* hopt_restrict state)
+{
+	for (unsigned int i = 0 ; i < state->_hopt_c_maps ; ++i)
+		if (state->_hopt_maps[i].desc)
+			return (i);
+}
+
+void
+__hopt_generate_help_menu(t_hopt_state* hopt_restrict state)
+{
+	char*	endonarg_str = "";
+	char*	tmp;
+	int		index = __hopt_first_option_present(state);
+
+	if (state->_hopt_end_on_arg_v == FALSE)
+		endonarg_str = "[OPTIONS...]";
+	state->_hopt_help_menu_str =
+		hopt_strvajoin(11,
+			"Usage: ",
+			basename(hopt_program_path),
+			state->_hopt_cmd_name ? " " : "",
+			state->_hopt_cmd_name ? state->_hopt_cmd_name : "",
+			" [OPTIONS...] ",
+			"ARGS... ",
+			endonarg_str,
+			"\n",
+			state->_hopt_program_desc == NULL ? "" : state->_hopt_program_desc,
+			state->_hopt_program_desc == NULL ? "" : "\n",
+			state->_hopt_maps[index].group == NULL ? "\n" : "");
+
+	unsigned int	lenmax = __hopt_calcul_lenmax_for_help_menu(state);
+	char*			last_group = NULL;
+	unsigned int	buffersize;
+	char*			line;
+
 	for (unsigned int i = 0 ; i < state->_hopt_c_maps ; ++i)
 	{
-		if (last_group != state->_hopt_maps[i].group)	// just compare address
-			__hopt_genhm_group(state, &last_group, i, lenmax);
+		if (state->_hopt_maps[i].group && (!last_group || strcmp(last_group, state->_hopt_maps[i].group)))
+		{
+			last_group = state->_hopt_maps[i].group;
+			__hopt_cathm_group(state, state->_hopt_maps[i].group, lenmax);
+		}
 		if (state->_hopt_maps[i].desc != NULL)
 		{
-			char**	splitted = strsplit(state->_hopt_maps[i].names, '=');
-			char*	aliases = hopt_strjoin("-", splitted[0]);
-			free(splitted[0]);
-			for (int j = 1 ; splitted[j] ; ++j)
+			char**	aliases = strsplit(state->_hopt_maps[i].names, '=');
+			char*	alias = hopt_strjoin("-", aliases[0]);
+			free(aliases[0]);
+			for (int j = 1 ; aliases[j] ; ++j)
 			{
-				tmp = aliases;
-				aliases = hopt_strvajoin(3, aliases, ", -", splitted[j]);
+				tmp = alias;
+				alias = hopt_strvajoin(3, alias, ", -", aliases[j]);
 				free(tmp);
-				free(splitted[j]);
+				free(aliases[j]);
 			}
-			free(splitted);
+			free(aliases);
 			int		buffersize = lenmax + strlen(state->_hopt_maps[i].desc) + 8;
 			char*	line = malloc((buffersize + 1) * sizeof(char));
-			snprintf(line, buffersize, "  %-*s\t%s\n", (int)lenmax, aliases, state->_hopt_maps[i].desc);
+			snprintf(line, buffersize, "  %-*s\t%s\n", (int)lenmax, alias, state->_hopt_maps[i].desc);
 			line[buffersize] = '\0';
 			tmp = state->_hopt_help_menu_str;
 			state->_hopt_help_menu_str = hopt_strjoin(state->_hopt_help_menu_str, line);
 			free(tmp);
-			free(aliases);
+			free(alias);
+			free(line);
+		}
+	}
+	if (hopt_c_states > 0 && !state->_hopt_cmd_name)
+	{
+		__hopt_cathm_group(state, "SUB-COMMAND", lenmax);
+		for (unsigned int i = 1 ; i <= hopt_c_states ; ++i)
+		{
+			buffersize = lenmax + 8;
+			line = malloc((buffersize + 1) * sizeof(char));
+			snprintf(line, buffersize, "  %-*s\n", (int)lenmax, hopt_state[i]._hopt_cmd_name);
+			line[buffersize] = '\0';
+			tmp = state->_hopt_help_menu_str;
+			state->_hopt_help_menu_str = hopt_strjoin(state->_hopt_help_menu_str, line);
+			free(tmp);
 			free(line);
 		}
 	}

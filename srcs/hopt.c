@@ -237,7 +237,7 @@ hopt_disable_sort(void)
 void
 hopt_program_description(char* program_desc)
 {
-	hopt_g_program_desc = program_desc;
+	hopt_program_desc = program_desc;
 }
 
 void

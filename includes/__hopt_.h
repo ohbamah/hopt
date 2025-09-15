@@ -64,6 +64,7 @@
 # define hopt_c_mandatory			hopt_state[hopt_c_states]._hopt_c_mandatory
 # define hopt_help_menu_str			hopt_state[hopt_c_states]._hopt_help_menu_str
 # define hopt_program_path			hopt_state[hopt_c_states]._hopt_program_path
+# define hopt_program_desc			hopt_state[hopt_c_states]._hopt_program_desc
 # define hopt_cmd_name				hopt_state[hopt_c_states]._hopt_cmd_name
 # define hopt_help_flagsw			hopt_state[hopt_c_states]._hopt_help_flagsw
 # define hopt_group_title			hopt_state[hopt_c_states]._hopt_group_title
@@ -82,6 +83,7 @@
 # define i_hopt_c_mandatory			hopt_state[hopt_current_state]._hopt_c_mandatory
 # define i_hopt_help_menu_str		hopt_state[hopt_current_state]._hopt_help_menu_str
 # define i_hopt_program_path		hopt_state[hopt_current_state]._hopt_program_path
+# define i_hopt_program_desc		hopt_state[hopt_current_state]._hopt_program_desc
 # define i_hopt_cmd_name			hopt_state[hopt_current_state]._hopt_cmd_name
 # define i_hopt_help_flagsw			hopt_state[hopt_current_state]._hopt_help_flagsw
 # define i_hopt_group_title			hopt_state[hopt_current_state]._hopt_group_title
@@ -95,7 +97,7 @@
 # define hopt_g_fdopened		hopt_global_state.fdopened
 # define hopt_g_file			hopt_global_state.file
 # define hopt_g_disable_sort	hopt_global_state.disable_sort_v
-# define hopt_g_program_desc	hopt_global_state.program_desc
+// # define hopt_g_program_desc	hopt_global_state.program_desc
 
 typedef struct hopt_sort
 {
@@ -130,7 +132,6 @@ typedef struct hopt_global_state
 	BOOL	fdopened;
 	BOOL	disable_sort_v;
 	FILE*	file;
-	char*	program_desc;
 }	t_hopt_global_state;
 
 typedef struct hopt_state
@@ -152,6 +153,7 @@ typedef struct hopt_state
 		t_hopt_subcommand_callback	_hopt_subcommand_cb;
 		void**						_hopt_subcommand_returns;
 		void*						_hopt_subcommand_arg;
+		char*						_hopt_program_desc;
 		char						_hopt_subcommand_executed;
 }	t_hopt_state;
 

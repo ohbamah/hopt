@@ -42,20 +42,21 @@ With HOPT, you can customize everything while keeping extreme control over optio
 | Features                        | HOPT     | ARGP     | GETOPT |
 | :------------------------------ | :------- | :-------- | :----- |
 | Parse program options           | ​✅       | ✅       | ✅     |
-| Parse option arguments          | ​✅       | ✅       | ❌     |
+| Parse option arguments          | ​✅       | ✅       | ✅     |
 | Sort argument values            | ​✅       | ❌       | ❌     |
-| Easy and readable usage         | ​✅       | ❌       | ​✅     |
+| Easy and readable usage         | ​✅       | 〰️       | ​✅     |
 | Simple optional features        | ​✅       | ❌       | ❌     |
 | Advanced logic support          | ​✅       | ​✅       | ❌     |
 | Returns error codes             | ​✅       | ​✅       | ​✅     |
 | Supports short and long options | ​✅       | ​✅       | ​✅     |
 | Supports callbacks              | ​✅       | ​✅       | ❌     |
-| Custom help menu setup          | ​✅       | ❌       | ❌     |
+| Custom help menu setup          | ​✅       | 〰️       | ❌     |
 | Auto-generated help menu        | ​✅       | ​✅       | ❌     |
 | Manages sub-command options     | ​✅       | ​〰️       | ❌     |
-| Automatic error handling        | 〰️       | ​✅       | ❌     |
-| POSIX (OS compatibilities)      | ✅       | ​❌       | 〰️     |
+| Automatic error handling        | 〰️       | ​✅       | 〰️     |
+| POSIX (OS compatibilities)      | ✅       | ​❌       | ✅     |
 | Language translation            | ❌       | ​✅       | ❌     |
+| Variadic option arguments       | ✅       | ​✅       | ❌     |
 
 
 ## Usage/Examples

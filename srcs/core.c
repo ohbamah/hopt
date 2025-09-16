@@ -458,6 +458,7 @@ __hopt_first_option_present(t_hopt_state* hopt_restrict state)
 	for (unsigned int i = 0 ; i < state->_hopt_c_maps ; ++i)
 		if (state->_hopt_maps[i].desc)
 			return (i);
+	return (0);
 }
 
 void
@@ -521,12 +522,12 @@ __hopt_generate_help_menu(t_hopt_state* hopt_restrict state)
 	}
 	if (hopt_c_states > 0 && !state->_hopt_cmd_name)
 	{
-		__hopt_cathm_group(state, "SUB-COMMAND", lenmax);
 		for (unsigned int i = 1 ; i <= hopt_c_states ; ++i)
 		{
-			buffersize = lenmax + 8;
+			unsigned int	desc_size = hopt_state[i]._hopt_program_desc ? strlen(hopt_state[i]._hopt_program_desc) : 0;
+			buffersize = lenmax + desc_size + 8;
 			line = malloc((buffersize + 1) * sizeof(char));
-			snprintf(line, buffersize, "  %-*s\n", (int)lenmax, hopt_state[i]._hopt_cmd_name);
+			snprintf(line, buffersize, "  %-*s\t%s\n", (int)lenmax, hopt_state[i]._hopt_cmd_name, hopt_state[i]._hopt_program_desc ? hopt_state[i]._hopt_program_desc : "");
 			line[buffersize] = '\0';
 			tmp = state->_hopt_help_menu_str;
 			state->_hopt_help_menu_str = hopt_strjoin(state->_hopt_help_menu_str, line);

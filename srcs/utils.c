@@ -50,6 +50,8 @@ hopt_strjoin(const char* hopt_restrict s1, const char* hopt_restrict s2)
 	unsigned int	size = strlen(s1) + strlen(s2);
 	unsigned int	j = 0;
 
+	if (!s1)
+		return (strdup(s2));
 	ret = malloc((size + 1) * sizeof(char*));
 	if (!ret)
 		return (NULL);
@@ -58,6 +60,28 @@ hopt_strjoin(const char* hopt_restrict s1, const char* hopt_restrict s2)
 	for (int i = 0 ; s2[i] ; ++i)
 		ret[j++] = s2[i];
 	ret[size] = '\0';
+	return (ret);
+}
+
+char*
+hopt_strfjoin(char* hopt_restrict s1, const char* hopt_restrict s2)
+{
+	char*			tmp = s1;
+	char*			ret;
+	unsigned int	size = strlen(s1) + strlen(s2);
+	unsigned int	j = 0;
+
+	if (!s1)
+		return (strdup(s2));
+	ret = malloc((size + 1) * sizeof(char*));
+	if (!ret)
+		return (NULL);
+	for (int i = 0 ; s1[i] ; ++i)
+		ret[j++] = s1[i];
+	for (int i = 0 ; s2[i] ; ++i)
+		ret[j++] = s2[i];
+	ret[size] = '\0';
+	free(tmp);
 	return (ret);
 }
 
@@ -91,6 +115,39 @@ hopt_strvajoin(unsigned int count, ...)
 }
 
 char*
+hopt_strfvajoin(unsigned int count, ...)
+{
+	char*			to_free = NULL;
+	char*			ret;
+	unsigned int	size = 0;
+	unsigned int 	at = 0;
+
+	va_list	va;
+	va_start(va, count);
+	for (unsigned int i = 0 ; i < count ; ++i)
+		size += strlen(va_arg(va, char*));
+	va_end(va);
+
+	ret = malloc((size + 1) * sizeof(char*));
+	if (!ret)
+		return (NULL);
+	ret[size] = '\0';
+
+	va_start(va, count);
+	for (unsigned int i = 0 ; i < count ; ++i)
+	{
+		char*			tmp = va_arg(va, char*);
+		if (i == 0)
+			to_free = tmp;
+		memcpy(&ret[at], tmp, strlen(tmp));
+		at += strlen(tmp);
+	}
+	va_end(va);
+	free(to_free);
+	return (ret);
+}
+
+char*
 hopt_strndup(const char* hopt_restrict s, unsigned int n)
 {
 	char*	ret;
@@ -104,7 +161,7 @@ hopt_strndup(const char* hopt_restrict s, unsigned int n)
 }
 
 char**
-strsplit(const char* hopt_restrict s, char sep)
+hopt_split(const char* hopt_restrict s, char sep)
 {
 	if (!s)
 		return (NULL);

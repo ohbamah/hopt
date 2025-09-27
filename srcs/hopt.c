@@ -30,17 +30,13 @@ char			hopt_cerr[HOPT_MAX_SSTR_SIZE] = {0};// extern global var in 'hopt.h'
 
 char			hopt_help_has_been_called_v = FALSE;
 
-int				hopt_fcmd = HOPT_NOCMD;
-char			hopt_ncmd[HOPT_MAX_SSTR_SIZE] = {0};
-char			hopt_ccmd[HOPT_MAX_SSTR_SIZE] = {0};
-char			hopt_pcmd[HOPT_MAX_SSTR_SIZE] = {0};
-
 char**				hopt_flags = NULL;
 t_hopt_global_state	hopt_global_state = {0};
 t_hopt_state		hopt_default_state = {0};
 t_hopt_state*		hopt_state = &hopt_default_state;
 unsigned int		hopt_c_states = 0;
 unsigned int		hopt_current_state = 0;
+char*				hopt_embedded_subcmds = NULL;
 
 void
 __hopt_generate_help_menu(t_hopt_state* hopt_restrict);
@@ -60,6 +56,7 @@ hopt(int ac, char** av)
 	h.av = av;
 	hopt_flags = calloc(hopt_c_states + 1, sizeof(BOOL*));
 	hopt_flags[0] = calloc(hopt_state[0]._hopt_c_maps, sizeof(BOOL));
+	hopt_current_state = 0;
 	FINDER(&h);
 	if (h.f.mandatory_count != hopt_c_mandatory)
 	{
@@ -247,9 +244,13 @@ hopt_group(char* group_name)
 }
 
 void
-hopt_subcmd(char* cmd, t_hopt_subcommand_callback cb, void* arg, void** returns)
+hopt_subcmd_begin(char* cmd, t_hopt_subcommand_callback cb, void* arg, void** returns)
 {
 	++hopt_c_states;
+	if (!hopt_embedded_subcmds)
+		hopt_embedded_subcmds = strdup(cmd);
+	else
+		hopt_embedded_subcmds = hopt_strfvajoin(3, hopt_embedded_subcmds, HOPT_SSS_STR, cmd);
 	if (hopt_state == &hopt_default_state)
 	{
 		t_hopt_state*	tmp = &hopt_default_state;
@@ -260,9 +261,32 @@ hopt_subcmd(char* cmd, t_hopt_subcommand_callback cb, void* arg, void** returns)
 		hopt_state = realloc(hopt_state, (hopt_c_states + 1) * sizeof(t_hopt_state));
 	memset(&hopt_state[hopt_c_states], 0, sizeof(t_hopt_state));
 	hopt_cmd_name = cmd;
+	hopt_cmd_hierarchy = strdup(hopt_embedded_subcmds);
 	hopt_subcommand_cb = cb;
 	hopt_subcommand_returns = returns;
 	hopt_subcommand_arg = arg;
+	// printf("hopt_embedded_subcmds: %s\n", hopt_embedded_subcmds);
+}
+
+void
+hopt_subcmd_end(void)
+{
+	char**	cmds = hopt_split(hopt_embedded_subcmds, HOPT_SSS_CHAR);
+	int		i = 1;
+
+	// Improvement with no `strdup` in `hopt_subcmd_begin` with `hopt_embedded_subcmds`
+	// And just put '\0' instead of the HOPT_SSS_CHAR
+	free(hopt_embedded_subcmds);
+	hopt_embedded_subcmds = NULL;
+	if (cmds && cmds[0] && cmds[1])
+		hopt_embedded_subcmds = strdup(cmds[0]);
+	for ( ; cmds && cmds[i] && cmds[i + 1] ; ++i)
+	{
+		hopt_embedded_subcmds = hopt_strfvajoin(3, hopt_embedded_subcmds, HOPT_SSS_STR, cmds[i]);
+		free(cmds[i]);
+	}
+	free(cmds);
+	// printf("hopt_subcmd_end: %s\n", hopt_embedded_subcmds);
 }
 
 char

@@ -207,15 +207,17 @@ FINDER_LONG_CMP(const char* av_i, char* alias)
 
 inline
 void
-__execute_subcommand_if_exists()
+__execute_subcommand_if_exists(unsigned int old_state_index)
 {
-	if (hopt_current_state > 0 && !i_hopt_subcommand_executed && i_hopt_subcommand_cb)
+	t_hopt_state*	state = &hopt_state[old_state_index];
+
+	if (hopt_current_state > 0 && !state->_hopt_subcommand_executed && state->_hopt_subcommand_cb)
 	{
-		if (i_hopt_subcommand_returns)
-			*i_hopt_subcommand_returns = i_hopt_subcommand_cb(i_hopt_subcommand_arg);
+		if (state->_hopt_subcommand_returns)
+			*state->_hopt_subcommand_returns = state->_hopt_subcommand_cb(state->_hopt_subcommand_arg);
 		else
-			i_hopt_subcommand_cb(i_hopt_subcommand_arg);
-		i_hopt_subcommand_executed = TRUE;
+			state->_hopt_subcommand_cb(state->_hopt_subcommand_arg);
+		state->_hopt_subcommand_executed = TRUE;
 	}
 }
 
@@ -246,7 +248,7 @@ FINDER(t_hopt* hopt_restrict h)
 				while (n < i_hopt_c_maps && h->f.found == FALSE && h->f.error == FALSE)
 				{
 					h->oac = i_hopt_maps[n].argc;
-					char** alias = strsplit(i_hopt_maps[n].names, '=');//FINDER_ALIAS(h, n);
+					char** alias = hopt_split(i_hopt_maps[n].names, '=');//FINDER_ALIAS(h, n);
 					if (!alias)
 					{
 						hopt_nerr = HOPT_MALLOCF;
@@ -318,20 +320,60 @@ FINDER(t_hopt* hopt_restrict h)
 			break ;
 		else if (hopt_current_state <= hopt_c_states)
 		{
+			// Search the next subcommand
 			for (unsigned int cmt = 1 ; cmt <= hopt_c_states ; ++cmt)
 			{
 				if (!strcmp(h->av[i], hopt_state[cmt]._hopt_cmd_name))
 				{
-					__execute_subcommand_if_exists();
+					char*			last_hierarchy = i_hopt_cmd_hierarchy;
+					unsigned int	last_state = hopt_current_state;
+
 					hopt_current_state = cmt;
 					i_hopt_flags = calloc(i_hopt_c_maps, sizeof(BOOL));
+					// There is a hierarchy
+					if (last_hierarchy && i_hopt_cmd_hierarchy)
+					{
+						unsigned int	last_hierarchy_size = 0;
+						unsigned int	last_cmd_name_size = strlen(i_hopt_cmd_name);
+
+						if (last_hierarchy)
+							last_hierarchy_size = strlen(last_hierarchy);
+						// The parent root hierarchy is the same
+						if (!strncmp(last_hierarchy, i_hopt_cmd_hierarchy, last_hierarchy_size))
+						{
+							// // Check if the next command in current hierarchy is the current command parsed
+							unsigned int	current_hierarchy_size = strlen(i_hopt_cmd_hierarchy);
+							if (last_hierarchy_size + 1 < current_hierarchy_size &&
+								!strncmp(i_hopt_cmd_name, &i_hopt_cmd_hierarchy[last_hierarchy_size + 1], last_cmd_name_size))
+							{
+								__execute_subcommand_if_exists(last_state);
+								break ;
+							}
+							else
+							{
+								hopt_current_state = last_state;
+								continue ;
+							}
+						}
+						else
+						{
+							hopt_current_state = last_state;
+							continue ;
+						}
+					}
+					else if (!last_hierarchy && i_hopt_cmd_hierarchy && strcmp(i_hopt_cmd_name, i_hopt_cmd_hierarchy))
+					{
+						hopt_current_state = last_state;
+						continue ;
+					}
+					__execute_subcommand_if_exists(last_state);
 					break;
 				}
 			}
 		}
 		++i;
 	}
-	__execute_subcommand_if_exists();
+	__execute_subcommand_if_exists(hopt_current_state);
 }
 
 inline
@@ -356,6 +398,35 @@ __oac_calcul_variadic_count(t_hopt* hopt_restrict h, unsigned int /*av index */ 
 	return (i);
 }
 
+BOOL
+__check_any_hierarchy_coherence(char** splitted_hierarchy, unsigned int index)
+{
+	char**	cmds = splitted_hierarchy;
+	char**	i_cmds = hopt_split(hopt_state[index]._hopt_cmd_hierarchy, HOPT_SSS_CHAR);
+
+	if (!cmds)
+	{
+		if (i_cmds[0] && !i_cmds[1])
+			return (TRUE);
+		return (FALSE);
+	}
+	for (unsigned int i = 0 ; i_cmds[i] && cmds[i] ; ++i)
+	{
+		if (!strcmp(i_cmds[i], cmds[i]))
+		{
+			if (!cmds[i + 1] && i_cmds[i + 1] && !i_cmds[i + 2])
+			{
+				return (TRUE);
+			}
+			//else
+			//{ add a boolean flag to avoid strcmp if not found, but continue the loop to free}
+		}
+		free(i_cmds[i]);
+	}
+	free(i_cmds);
+	return (FALSE);
+}
+
 void
 __hopt_find_missing_mandatory(t_hopt* hopt_restrict h)
 {
@@ -373,7 +444,7 @@ __hopt_find_missing_mandatory(t_hopt* hopt_restrict h)
 				if (f == TRUE)
 				{
 					hopt_nerr = HOPT_MISSOPT;
-					s = strsplit(tmp->_hopt_maps[i].names, '=');
+					s = hopt_split(tmp->_hopt_maps[i].names, '=');
 					size = strlen(s[0]);
 					if (size < sizeof(hopt_cerr))
 						strncpy(hopt_cerr, s[0], size);
@@ -408,33 +479,28 @@ void
 __hopt_cathm_group(t_hopt_state* hopt_restrict state, char* category_name, unsigned int lenmax)
 {
 	int		buffersize = lenmax + strlen(category_name) + 10;
-	char*	tmp = state->_hopt_help_menu_str;
 	char*	line = malloc((buffersize + 1) * sizeof(char));
 	line[buffersize] = '\0';
 	snprintf(line, buffersize, "\n\e[1m  %-*s\e[0m\n", (int)lenmax, category_name);
-	state->_hopt_help_menu_str = hopt_strjoin(state->_hopt_help_menu_str, line);
-	free(tmp);
+	state->_hopt_help_menu_str = hopt_strfjoin(state->_hopt_help_menu_str, line);
 	free(line);
 }
 
 unsigned int
 __hopt_calcul_lenmax_for_help_menu(t_hopt_state* hopt_restrict state)
 {
-	char*			tmp;
 	unsigned int	lenmax = 0;
 
 	for (unsigned int i = 0 ; i < state->_hopt_c_maps ; ++i)
 	{
 		if (state->_hopt_maps[i].desc != NULL)
 		{
-			char**	splitted = strsplit(state->_hopt_maps[i].names, '=');
+			char**	splitted = hopt_split(state->_hopt_maps[i].names, '=');
 			char*	aliases = hopt_strjoin("-", splitted[0]);
 			free(splitted[0]);
 			for (int j = 1 ; splitted[j] ; ++j)
 			{
-				tmp = aliases;
-				aliases = hopt_strvajoin(3, aliases, ", -", splitted[j]);
-				free(tmp);
+				aliases = hopt_strfvajoin(3, aliases, ", -", splitted[j]);
 				free(splitted[j]);
 			}
 			free(splitted);
@@ -465,7 +531,6 @@ void
 __hopt_generate_help_menu(t_hopt_state* hopt_restrict state)
 {
 	char*	endonarg_str = "";
-	char*	tmp;
 	int		index = __hopt_first_option_present(state);
 
 	if (state->_hopt_end_on_arg_v == FALSE)
@@ -498,14 +563,12 @@ __hopt_generate_help_menu(t_hopt_state* hopt_restrict state)
 		}
 		if (state->_hopt_maps[i].desc != NULL)
 		{
-			char**	aliases = strsplit(state->_hopt_maps[i].names, '=');
+			char**	aliases = hopt_split(state->_hopt_maps[i].names, '=');
 			char*	alias = hopt_strjoin("-", aliases[0]);
 			free(aliases[0]);
 			for (int j = 1 ; aliases[j] ; ++j)
 			{
-				tmp = alias;
-				alias = hopt_strvajoin(3, alias, ", -", aliases[j]);
-				free(tmp);
+				alias = hopt_strfvajoin(3, alias, ", -", aliases[j]);
 				free(aliases[j]);
 			}
 			free(aliases);
@@ -513,26 +576,34 @@ __hopt_generate_help_menu(t_hopt_state* hopt_restrict state)
 			char*	line = malloc((buffersize + 1) * sizeof(char));
 			snprintf(line, buffersize, "  %-*s\t%s\n", (int)lenmax, alias, state->_hopt_maps[i].desc);
 			line[buffersize] = '\0';
-			tmp = state->_hopt_help_menu_str;
-			state->_hopt_help_menu_str = hopt_strjoin(state->_hopt_help_menu_str, line);
-			free(tmp);
+			state->_hopt_help_menu_str = hopt_strfjoin(state->_hopt_help_menu_str, line);
 			free(alias);
 			free(line);
 		}
 	}
-	if (hopt_c_states > 0 && !state->_hopt_cmd_name)
+	if (hopt_c_states > 0)
 	{
+		char**	splitted_hierarchy = hopt_split(state->_hopt_cmd_hierarchy, HOPT_SSS_CHAR);
+		printf("hierarchy: %s\n", state->_hopt_cmd_hierarchy);
 		for (unsigned int i = 1 ; i <= hopt_c_states ; ++i)
 		{
-			unsigned int	desc_size = hopt_state[i]._hopt_program_desc ? strlen(hopt_state[i]._hopt_program_desc) : 0;
-			buffersize = lenmax + desc_size + 8;
-			line = malloc((buffersize + 1) * sizeof(char));
-			snprintf(line, buffersize, "  %-*s\t%s\n", (int)lenmax, hopt_state[i]._hopt_cmd_name, hopt_state[i]._hopt_program_desc ? hopt_state[i]._hopt_program_desc : "");
-			line[buffersize] = '\0';
-			tmp = state->_hopt_help_menu_str;
-			state->_hopt_help_menu_str = hopt_strjoin(state->_hopt_help_menu_str, line);
-			free(tmp);
-			free(line);
+			BOOL	coherence;
+
+			coherence = __check_any_hierarchy_coherence(splitted_hierarchy, i);
+			if (coherence)
+			{
+				unsigned int	desc_size = hopt_state[i]._hopt_program_desc ? strlen(hopt_state[i]._hopt_program_desc) : 0;
+				buffersize = lenmax + desc_size + 8;
+				line = malloc((buffersize + 1) * sizeof(char));
+				snprintf(line, buffersize, "  %-*s\t%s\n", (int)lenmax, hopt_state[i]._hopt_cmd_name, hopt_state[i]._hopt_program_desc ? hopt_state[i]._hopt_program_desc : "");
+				line[buffersize] = '\0';
+				state->_hopt_help_menu_str = hopt_strfjoin(state->_hopt_help_menu_str, line);
+				free(line);
+			}
 		}
+		if (splitted_hierarchy)
+			for (unsigned int i = 0 ; splitted_hierarchy[i] ; ++i)
+				free(splitted_hierarchy[i]);
+		free(splitted_hierarchy);
 	}
 }

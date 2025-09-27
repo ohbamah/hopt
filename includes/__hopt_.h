@@ -66,6 +66,7 @@
 # define hopt_program_path			hopt_state[hopt_c_states]._hopt_program_path
 # define hopt_program_desc			hopt_state[hopt_c_states]._hopt_program_desc
 # define hopt_cmd_name				hopt_state[hopt_c_states]._hopt_cmd_name
+# define hopt_cmd_hierarchy			hopt_state[hopt_c_states]._hopt_cmd_hierarchy
 # define hopt_help_flagsw			hopt_state[hopt_c_states]._hopt_help_flagsw
 # define hopt_group_title			hopt_state[hopt_c_states]._hopt_group_title
 # define hopt_subcommand_cb			hopt_state[hopt_c_states]._hopt_subcommand_cb
@@ -85,6 +86,7 @@
 # define i_hopt_program_path		hopt_state[hopt_current_state]._hopt_program_path
 # define i_hopt_program_desc		hopt_state[hopt_current_state]._hopt_program_desc
 # define i_hopt_cmd_name			hopt_state[hopt_current_state]._hopt_cmd_name
+# define i_hopt_cmd_hierarchy		hopt_state[hopt_current_state]._hopt_cmd_hierarchy
 # define i_hopt_help_flagsw			hopt_state[hopt_current_state]._hopt_help_flagsw
 # define i_hopt_group_title			hopt_state[hopt_current_state]._hopt_group_title
 # define i_hopt_subcommand_cb		hopt_state[hopt_current_state]._hopt_subcommand_cb
@@ -146,6 +148,7 @@ typedef struct hopt_state
 		char*						_hopt_program_path;
 		char*						_hopt_group_title;
 		char*						_hopt_cmd_name;
+		char*						_hopt_cmd_hierarchy;
 		t_hopt_map*					_hopt_maps;
 		unsigned int				_hopt_c_maps;
 		unsigned int				_hopt_c_mandatory;
@@ -163,6 +166,7 @@ extern t_hopt_state*		hopt_state;
 extern t_hopt_global_state	hopt_global_state;
 extern unsigned int			hopt_c_states;
 extern unsigned int			hopt_current_state;
+extern char*				hopt_embedded_subcmds;
 
 // lst.c
 t_hopt_sort*	hopt_new_node(unsigned int index, unsigned int argc);
@@ -171,11 +175,13 @@ void			hopt_add_back(t_hopt_sort** head, t_hopt_sort* node);
 void			hopt_free_lstsort(t_hopt_sort* head);
 
 // utils.c
-char**			strsplit(const char* hopt_restrict s, char sep);
+char**			hopt_split(const char* hopt_restrict s, char sep);
 void			free2(void**  ptr2);
 unsigned int	strlen2(char* hopt_restrict* hopt_restrict s);
 char*			hopt_strvajoin(unsigned int count, ...);
 char*			hopt_strjoin(const char* hopt_restrict s1, const char* hopt_restrict s2);
+char*			hopt_strfvajoin(unsigned int count, ...);
+char*			hopt_strfjoin(char* hopt_restrict s1, const char* hopt_restrict s2);
 # ifndef _HOPT_LIBGEN_COMPABILITY
 char*			basename(const char* hopt_restrict path);
 # endif

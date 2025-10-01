@@ -108,7 +108,7 @@
 	/*******************/
 
 # define hopt_subcmd(name, cb, arg, returns) \
-for (int i = (hopt_subcmd_begin(name, cb, arg, returns), 1) ; i ; i = (hopt_subcmd_end(), 0))
+for (int __hopt_i = (hopt_subcmd_begin(name, cb, arg, returns), 1) ; __hopt_i ; __hopt_i = (hopt_subcmd_end(), 0))
 
 
 	/*******************/

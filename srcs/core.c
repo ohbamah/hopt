@@ -584,7 +584,6 @@ __hopt_generate_help_menu(t_hopt_state* hopt_restrict state)
 	if (hopt_c_states > 0)
 	{
 		char**	splitted_hierarchy = hopt_split(state->_hopt_cmd_hierarchy, HOPT_SSS_CHAR);
-		printf("hierarchy: %s\n", state->_hopt_cmd_hierarchy);
 		for (unsigned int i = 1 ; i <= hopt_c_states ; ++i)
 		{
 			BOOL	coherence;

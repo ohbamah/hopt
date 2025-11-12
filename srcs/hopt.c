@@ -57,7 +57,7 @@ hopt(int ac, char** av)
 	hopt_flags = calloc(hopt_c_states + 1, sizeof(BOOL*));
 	hopt_flags[0] = calloc(hopt_state[0]._hopt_c_maps, sizeof(BOOL));
 	hopt_current_state = 0;
-	FINDER(&h);
+	BETTER_FINDER(&h);
 	if (h.f.mandatory_count != hopt_c_mandatory)
 	{
 		__hopt_find_missing_mandatory(&h);
@@ -136,13 +136,33 @@ hopt_free(void)
 	{
 		free(hopt_state[i]._hopt_help_menu_str);
 		free(hopt_state[i]._hopt_maps);
-		free(hopt_flags[i]);
+		if (hopt_flags && hopt_flags[i])
+			free(hopt_flags[i]);
 	}
 	if (hopt_state != &hopt_default_state)
 		free(hopt_state);
 	if (hopt_g_fdopened == TRUE && hopt_g_file != NULL)
 		fclose(hopt_g_file);
-	free(hopt_flags);
+	if (hopt_flags)
+		free(hopt_flags);
+	if (hopt_embedded_subcmds)
+		free(hopt_embedded_subcmds);
+
+	memset(hopt_cerr, 0, sizeof(hopt_cerr));
+	memset(&hopt_global_state, 0, sizeof(hopt_global_state));
+	memset(&hopt_default_state, 0, sizeof(hopt_default_state));
+
+	hopt_nerr = HOPT_SUCCESS;
+	hopt_help_has_been_called_v = FALSE;
+	
+	hopt_g_file = NULL;
+	hopt_state = &hopt_default_state;
+	hopt_flags = NULL;
+	hopt_c_states = 0;
+	hopt_current_state = 0;
+	hopt_embedded_subcmds = NULL;
+
+	hopt_reset();
 }
 
 // Return a string describe error (returned str must be free'd)
@@ -275,7 +295,6 @@ hopt_subcmd_end(void)
 	int		i = 1;
 
 	// Improvement with no `strdup` in `hopt_subcmd_begin` with `hopt_embedded_subcmds`
-	// And just put '\0' instead of the HOPT_SSS_CHAR
 	free(hopt_embedded_subcmds);
 	hopt_embedded_subcmds = NULL;
 	if (cmds && cmds[0] && cmds[1])
@@ -286,7 +305,6 @@ hopt_subcmd_end(void)
 		free(cmds[i]);
 	}
 	free(cmds);
-	// printf("hopt_subcmd_end: %s\n", hopt_embedded_subcmds);
 }
 
 char

@@ -93,7 +93,7 @@ FINDER_ERROR(t_hopt* hopt_restrict h, int errcode, unsigned int i, int j)
 	memset(&hopt_cerr, 0, sizeof(hopt_cerr));
 	h->f.error = TRUE;
 	hopt_nerr = errcode;
-	if (h->f.strso == TRUE)
+	if (h->f.is_short_option == TRUE)
 		strncpy(hopt_cerr, &h->av[i][j], 1);
 	else
 	{
@@ -104,6 +104,26 @@ FINDER_ERROR(t_hopt* hopt_restrict h, int errcode, unsigned int i, int j)
 	}
 	if (i_hopt_auto_help_v == TRUE && (i_hopt_help_flagsw & errcode))
 		printf("%s\n", hopt_help_menu(i_hopt_cmd_name));
+}
+
+static inline
+void
+ERROR_SYSTEM(t_hopt* hopt_restrict h, int errcode, const char* option, unsigned int len)
+{
+	int	offset = 0;
+
+	memset(&hopt_cerr, 0, HOPT_MAX_SSTR_SIZE);
+	h->f.error = TRUE;
+	hopt_nerr = errcode;
+	if (!h->f.is_short_option)
+	{
+		hopt_cerr[0] = '-';
+		offset = 1;
+	}
+	if (strlen(option) < HOPT_MAX_SSTR_SIZE - 2)
+		strncpy(&hopt_cerr[offset], option, len);
+	else
+		strncpy(&hopt_cerr[offset], option, HOPT_MAX_SSTR_SIZE - 2);
 }
 
 static inline
@@ -144,13 +164,50 @@ FINDER_WRITE_TYPE(char* arg, unsigned int j, unsigned int opt_idx)
 	}
 }
 
+static inline
+void
+TYPOS(t_hopt* hopt_restrict h, char* arg, unsigned int i, t_hopt_map* current_map)
+{
+	long long	at = 0LL;
+	double		ad = 0.0;
+	switch (i_hopt_maps[h->f.n].flag)
+	{
+		case HOPT_TYPE_STR:
+			memcpy(current_map->mem + i * sizeof(char*), &arg, sizeof(char*));
+			break;
+		case HOPT_TYPE_CHAR:
+			at = atoi(arg);
+			*((char*)(current_map->mem) + i) = (char)at;
+			break;
+		case HOPT_TYPE_SHORT:
+			at = atoi(arg);
+			*((short*)(current_map->mem) + i) = (short)at;
+			break;
+		case HOPT_TYPE_INT:
+			at = atoi(arg);
+			*((int*)(current_map->mem) + i) = (int)at;
+			break;
+		case HOPT_TYPE_LONG:
+			at = atoll(arg);
+			*((long long*)(current_map->mem) + i) = at;
+			break;
+		case HOPT_TYPE_FLOAT:
+			ad = (float)atof(arg);
+			*((float*)(current_map->mem) + i) = (float)ad;
+			break;
+		case HOPT_TYPE_DOUBLE:
+			ad = (double)atof(arg);
+			*((double*)(current_map->mem) + i) = ad;
+			break;
+	}
+}
+
 static
 int
 FINDER_WRITE(t_hopt* hopt_restrict h, unsigned int /*av index*/ idx, unsigned int /*av[idx] index*/ c, unsigned int opt_idx)
 {
 	unsigned int	j 			= 0;
 	unsigned int	tmp 		= idx;
-	BOOL			found		= FALSE;
 
 	if (i_hopt_maps[opt_idx].mandatory == TRUE && i_hopt_flags[opt_idx] == FALSE)
 		++h->f.mandatory_count;
@@ -158,21 +215,23 @@ FINDER_WRITE(t_hopt* hopt_restrict h, unsigned int /*av index*/ idx, unsigned in
 	{
 		if (h->oac == 1)
 		{
+			printf("1 ? - %s\n", h->av[idx]);
 			char*	value = strchr(h->av[idx], '=');
 			if (value)
 			{
 				FINDER_WRITE_TYPE(&value[1], j, opt_idx);
-				found = TRUE;
+				return (idx);
 			}
 		}
-		if (h->oac >= 1 && found == FALSE)
+		if (h->oac >= 1)
 		{
 			++idx;
 			if (!h->av[idx])
 				FINDER_ERROR(h, HOPT_MISSOARGC, idx - 1, c);
-			while (h->av[idx] && j < (unsigned int)h->oac) //? && h->f.error == FALSE
+			while (h->f.error == FALSE && h->av[idx] && j < (unsigned int)h->oac)
 			{
-				if ((!h->av[idx + 1] && j < h->oac - 1U) || (h->av[idx][0] == '-' && strnlen(h->av[idx], 2) > 1 && !isdigit(h->av[idx][1])))
+				printf("%d <=> %s\n", h->oac, h->av[idx]);
+				if ((!h->av[idx + 1] && j < h->oac - 1U)) // || (h->av[idx][0] == '-' && strnlen(h->av[idx], 2) > 1 && !isdigit(h->av[idx][1]))
 					FINDER_ERROR(h, HOPT_MISSOARGC, tmp, c);
 				FINDER_WRITE_TYPE(h->av[idx], j, opt_idx);
 				++j;
@@ -180,7 +239,8 @@ FINDER_WRITE(t_hopt* hopt_restrict h, unsigned int /*av index*/ idx, unsigned in
 				++h->f.addrs_idx;
 				++h->n_parsed;
 			}
-			--idx;
+			// ++idx;
+			printf("%d <=> %s\n", h->oac, h->av[idx]);
 		}
 		else if (h->oac == 0)
 			++(*((BOOL*)i_hopt_maps[opt_idx].mem));
@@ -196,13 +256,76 @@ FINDER_WRITE(t_hopt* hopt_restrict h, unsigned int /*av index*/ idx, unsigned in
 }
 
 static
+void
+ANHIHILATOR(t_hopt* hopt_restrict h, const char* option, unsigned int len, unsigned int n)
+{
+	if (i_hopt_maps[n].mandatory && !i_hopt_flags[n])
+		++h->f.mandatory_count;
+	if ((i_hopt_maps[n].flag & 0xF) != HOPT_TYPE_CB)
+	{
+		if (h->oac == 1)
+		{
+			char*	value = strchr(h->av[h->f.i], '=');
+			if (value)
+			{
+				TYPOS(h, value, 1, &i_hopt_maps[n]);
+				// return (h->f.i);
+				return ;
+			}
+		}
+		if (h->oac >= 1)
+		{
+			++h->f.i; // skip `option`
+			if (!h->av[h->f.i])
+				ERROR_SYSTEM(h, HOPT_MISSOARGC, option, len);
+			if (!h->f.error)
+			{
+				unsigned int i = 0;
+				for ( ; h->av[h->f.i] && i < (unsigned int)h->oac ; ++i)
+				{
+					TYPOS(h, h->av[h->f.i + i], i + 1, &i_hopt_maps[n]);
+					++h->f.addrs_idx;
+				}
+				if (i < (unsigned int)h->oac)
+					ERROR_SYSTEM(h, HOPT_MISSOARGC, option, len);
+			}
+		}
+		else
+			++(*((BOOL*)i_hopt_maps[n].mem));
+	}
+	else
+	{
+		if ((i_hopt_maps[n].cb)(h->oac, &h->av[h->f.i], i_hopt_maps[n].cb_arg) == -1)
+			ERROR_SYSTEM(h, HOPT_CBERROR, option, len);
+	}
+	// h->f.i += h->oac;
+	// return (h->f.i);
+	return ;
+}
+
+static
 BOOL
-FINDER_LONG_CMP(const char* av_i, char* alias)
+is_valide_long_option(const char* av_i, char* alias)
 {
 	char*	_strchr = strchr(av_i, '=');
 	if (!_strchr)
 		return (!strcmp(av_i, alias));
-	return (strlen(av_i) - strlen(_strchr) == strlen(alias) && av_i[strlen(alias)] == '=');
+
+	unsigned int	size = abs((int)(strlen(av_i) - strlen(_strchr)));
+	return (!strncmp(av_i, alias, size) && strlen(alias) == size);
+	// return (strlen(av_i) - strlen(_strchr) == strlen(alias) && av_i[strlen(alias)] == '=');
+}
+
+static
+BOOL
+is_valid_option(const char* alias, const char* option, unsigned int len)
+{
+	char*	option_name = strchr(option, '=');
+	if (!option_name)
+		return (!strcmp(option, alias));
+	
+	unsigned int size = abs(((int)len - (int)strlen(option_name)));
+	return (!strncmp(option, alias, size) && strlen(alias) == size);
 }
 
 inline
@@ -222,6 +345,196 @@ __execute_subcommand_if_exists(unsigned int old_state_index)
 }
 
 void
+SLAVE(t_hopt* hopt_restrict h, const char* option, unsigned int len)
+{
+	if (i_hopt_flags[h->f.n] && !i_hopt_redef_allowed)
+		ERROR_SYSTEM(h, HOPT_REDEFINED, option, len);
+	else if ((!i_hopt_flags[h->f.n] || (i_hopt_flags[h->f.n] && i_hopt_redef_overwrt)))
+	{
+		if (!hopt_g_disable_sort)
+			hopt_add_back(&h->f.head, hopt_new_node(h->f.last_i, h->oac));
+		i_hopt_flags[h->f.n] = TRUE;
+	}
+}
+
+void
+EXECUTOR(t_hopt* hopt_restrict h, const char* option, unsigned int len)
+{
+	char**	aliases;
+	char*	alias;
+	BOOL	is_the_last = FALSE;
+
+	if (h->f.is_short_option)
+		is_the_last = !h->av[h->f.i][h->f.l + 1] || h->av[h->f.i][h->f.l + 1] == '=';
+
+	h->f.n = 0;
+	h->f.found = FALSE;
+	h->offset = 0;
+	for ( ; !h->f.error && !h->f.found && h->f.n < i_hopt_c_maps ; ++h->f.n) // Loop for each possible options
+	{
+		h->oac = i_hopt_maps[h->f.n].argc;
+		aliases = hopt_split(i_hopt_maps[h->f.n].names, '=');
+		if (!aliases)
+		{
+			hopt_nerr = HOPT_MALLOCF;
+			h->f.error = TRUE;
+		}
+		for ( ; !h->f.error && !h->f.found && aliases[h->f.m] ; ++h->f.m) // Loop for each aliases of options[n]
+		{
+			h->f.last_i = h->f.i;
+			alias = aliases[h->f.m];
+
+			if (is_valid_option(alias, option, len))
+			{
+				
+				if (h->oac == HOPT_VARIADIC_ARGUMENTS)
+					h->oac = __oac_calcul_variadic_count(h, h->f.i, h->f.l);
+
+				if (!i_hopt_flags[h->f.n] || (i_hopt_redef_allowed && i_hopt_redef_overwrt))
+				{
+					if (h->oac > 0 && h->f.is_short_option && !is_the_last)
+						ERROR_SYSTEM(h, HOPT_BADSORDER, option, len);
+					else
+					{
+						ANHIHILATOR(h, option, len, h->f.n);
+						h->f.i += h->oac;
+						h->n_parsed += 1 + h->oac;
+					}
+				}
+				else if (i_hopt_redef_allowed)
+				{
+					h->f.i += h->oac;
+					h->n_parsed += 1 + h->oac;
+				}
+				h->f.found = TRUE;
+			}
+			free(aliases[h->f.m]);
+		}
+		for ( ; aliases[h->f.m] ; ++h->f.m)
+			free(aliases[h->f.m]);
+		free(aliases);
+
+		if (!h->f.error && h->f.found)
+			SLAVE(h, option, len);
+	}
+	// if (!h->f.error && !h->f.found && !i_hopt_undef_allowed)
+	// 	FINDER_ERROR(h, HOPT_UNDEFINED, i, j);
+	// else if (h->f.error == FALSE && h->av[i])
+	// 	is_an_option = h->av[i][0] == '-' && strnlen(&h->av[i][0], 2) > 1;
+}
+
+BOOL
+SEVEN_COMMANDS(const char* argument, unsigned int size)
+{
+	// Search the next subcommand
+	for (unsigned int cmt = 1 ; cmt <= hopt_c_states ; ++cmt)
+	{
+		if (!strcmp(argument, hopt_state[cmt]._hopt_cmd_name))
+		{
+			char*			last_hierarchy = i_hopt_cmd_hierarchy;
+			unsigned int	last_state = hopt_current_state;
+
+			hopt_current_state = cmt;
+			i_hopt_flags = calloc(i_hopt_c_maps, sizeof(BOOL));
+			// There is a hierarchy
+			if (last_hierarchy && i_hopt_cmd_hierarchy)
+			{
+				unsigned int	last_hierarchy_size = 0;
+				unsigned int	last_cmd_name_size = strlen(i_hopt_cmd_name);
+
+				if (last_hierarchy)
+					last_hierarchy_size = strlen(last_hierarchy);
+				// The parent root hierarchy is the same
+				if (!strncmp(last_hierarchy, i_hopt_cmd_hierarchy, last_hierarchy_size))
+				{
+					// // Check if the next command in current hierarchy is the current command parsed
+					unsigned int	current_hierarchy_size = strlen(i_hopt_cmd_hierarchy);
+					if (last_hierarchy_size + 1 < current_hierarchy_size &&
+						!strncmp(i_hopt_cmd_name, &i_hopt_cmd_hierarchy[last_hierarchy_size + 1], last_cmd_name_size))
+					{
+						__execute_subcommand_if_exists(last_state);
+						return (TRUE);
+					} // Worst code I wrote in my life
+					else
+					{
+						hopt_current_state = last_state;
+						continue ;
+					}
+				}
+				else
+				{
+					hopt_current_state = last_state;
+					continue ;
+				}
+			}
+			else if (!last_hierarchy && i_hopt_cmd_hierarchy && strcmp(i_hopt_cmd_name, i_hopt_cmd_hierarchy))
+			{
+				hopt_current_state = last_state;
+				continue ;
+			}
+			__execute_subcommand_if_exists(last_state);
+			return (TRUE);
+		}
+	}
+	return (FALSE);
+}
+
+void
+BETTER_FINDER(t_hopt* hopt_restrict h)
+{
+	int			size;
+	BOOL		is_an_option;
+	BOOL		is_subcmd = FALSE;
+	const char*	argument;
+
+	h->f.i = 1;
+	for ( ; !h->f.error && h->f.i < (unsigned int)h->ac && h->av[h->f.i] ; ++h->f.i) // Loop for each arguments
+	{
+		argument = h->av[h->f.i];
+		is_an_option = argument[0] == '-' && argument[1];
+
+		if (is_an_option)
+		{
+			if (argument[1] != '-')
+				h->f.is_short_option = TRUE;
+			else
+				h->f.is_short_option = FALSE;
+
+			if (!h->f.is_short_option)
+			{
+				size = strlen(&argument[1]);
+				EXECUTOR(h, &argument[1], size);
+				if (!h->f.error && !h->f.found && !i_hopt_undef_allowed)
+					ERROR_SYSTEM(h, HOPT_UNDEFINED, &argument[1], size);
+			}
+			else
+			{
+				for (unsigned int l = 1 ; !h->f.error && argument[l] ; ++l)
+				{
+					h->f.l = l;
+					if (argument[l + 1] == '=')
+						size = strlen(&argument[l]);
+					else
+						size = 1;
+					
+					EXECUTOR(h, &argument[l], size);
+					if (!h->f.error && !h->f.found && !i_hopt_undef_allowed)
+						ERROR_SYSTEM(h, HOPT_UNDEFINED, &argument[l], size);
+				}
+			}
+		}
+		// else if (hopt_current_state <= hopt_c_states)
+		// {
+		// 	is_subcmd = SEVEN_COMMANDS(argument, strlen(argument));
+		// }
+		if (!is_an_option && !is_subcmd && i_hopt_end_on_arg_v)
+			break ;
+	}
+	__execute_subcommand_if_exists(hopt_current_state);
+}
+
+// Trizomic function
+void
 FINDER(t_hopt* hopt_restrict h)
 {
 	unsigned int	i;
@@ -230,22 +543,22 @@ FINDER(t_hopt* hopt_restrict h)
 	unsigned int	m;
 
 	i = 1;
-	while (i < (unsigned int)h->ac && h->f.error == FALSE)
+	while (h->f.error == FALSE && i < (unsigned int)h->ac)
 	{
 		int avi_size = strlen(&h->av[i][1]);
 		BOOL is_an_option = h->av[i][0] == '-' && strnlen(&h->av[i][0], 2) > 1;
 		if (is_an_option)
 		{
-			h->f.strso = FALSE;
+			h->f.is_short_option = FALSE;
 			if (h->av[i][1] != '-' && strnlen(&h->av[i][1], 2) > 1)
-				h->f.strso = TRUE;
+				h->f.is_short_option = TRUE;
 			j = 1;
 			while (h->f.error == FALSE && h->av[i] && (h->av[i][j] && h->av[i][j] != '=') && is_an_option)
 			{
 				n = 0;
 				h->f.found = FALSE;
 				h->offset = 0;
-				while (n < i_hopt_c_maps && h->f.found == FALSE && h->f.error == FALSE)
+				while (h->f.error == FALSE && n < i_hopt_c_maps && h->f.found == FALSE)
 				{
 					h->oac = i_hopt_maps[n].argc;
 					char** alias = hopt_split(i_hopt_maps[n].names, '=');//FINDER_ALIAS(h, n);
@@ -266,7 +579,7 @@ FINDER(t_hopt* hopt_restrict h)
 								int	variadic_oac = __oac_calcul_variadic_count(h, i, j);
 								h->oac = variadic_oac;
 							}
-							if (h->f.strso == FALSE && FINDER_LONG_CMP(&h->av[i][1], alias[m]))
+							if (h->f.is_short_option == FALSE && is_valide_long_option(&h->av[i][1], alias[m]))
 							{
 								int	tmp_i = i;
 								if (i_hopt_flags[n] == FALSE || itCanBeOverwritable(n))
@@ -281,7 +594,7 @@ FINDER(t_hopt* hopt_restrict h)
 								h->f.found = TRUE;
 								j = avi_size;
 							}
-							else if (h->f.strso == TRUE && h->av[i][j] == alias[m][0])
+							else if (h->f.is_short_option == TRUE && h->av[i][j] == alias[m][0])
 							{
 								if (h->oac > 0 && (h->av[i][j + 1] != '\0' && (h->av[i][j + 1] != '=' && h->oac == 1)))
 									FINDER_ERROR(h, HOPT_BADSORDER, i, j);
@@ -348,7 +661,7 @@ FINDER(t_hopt* hopt_restrict h)
 							{
 								__execute_subcommand_if_exists(last_state);
 								break ;
-							}
+							} // Worst code I wrote in my life
 							else
 							{
 								hopt_current_state = last_state;
@@ -384,7 +697,7 @@ __oac_calcul_variadic_count(t_hopt* hopt_restrict h, unsigned int /*av index */ 
 	int		index = idx;
 	BOOL	is_an_option = FALSE;
 
-	if (h->f.strso && (h->av[index][c + 1] != '\0' && (h->av[index][c + 1] != '=' && h->oac == 1)))
+	if (h->f.is_short_option && (h->av[index][c + 1] != '\0' && (h->av[index][c + 1] != '=' && h->oac == 1)))
 		return (0);
 	++index;
 	for ( ; i < __INT_MAX__ && h->av[index] ; )

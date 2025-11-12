@@ -1,0 +1,481 @@
+#include "unit_tester.hpp"
+#include <cstring>
+
+int tests_passed = 0;
+int tests_total = 0;
+
+# define CREATE_ARGS(...) {"./prog", __VA_ARGS__, NULL}
+# define ARGS_SIZE(tab) sizeof(tab)/sizeof(tab[0]) - 1
+
+void
+check_expectation(bool condition, const char* description)
+{
+    tests_total++;
+    if (condition)
+    {
+        printf("        \033[32m%s\033[0m\n", description);
+        tests_passed++;
+    } else
+        printf("        \033[31m%s\033[0m\n", description);
+}
+
+void
+check_expectation_str_eq(const char* str1, const char* str2)
+{
+    check_expectation(!strcmp(str1, str2), (str1 + std::string(" == ") + str2).data());
+}
+
+void
+check_expectation_str_ne(const char* str1, const char* str2)
+{
+    check_expectation(!strcmp(str1, str2), (str1 + std::string(" != ") + str2).data());
+}
+
+int main(void)
+{
+    printf("🚀 HOPT Unit Tests\n");
+    printf("==================\n");
+
+    int     size;
+    int     result;
+
+    void*   mock = (void*)new long;
+    bool    bool_mock = 0;
+    char    char_mock = 0;
+    short   short_mock = 0;
+    int     int_mock = 0;
+    long    long_mock = 0;
+    char*   str_mock[24] = {0};
+
+        // TODO with allow_undef ...
+        // TODO with undefined options ...
+
+    // CONCATENATED SHORT OPTIONS
+
+    TESTS("Concatenated short options")
+    {
+        DESCRIBE("should works")
+        {
+            hopt_free();
+            hopt_reset();
+
+            bool    o_mock = false;
+            bool    v_mock = false;
+            bool    p_mock = false;
+            bool    d_mock = false;
+            bool    s_mock = false;
+            int     a_mock = false;
+
+            char* args[] = CREATE_ARGS("-ovdsa", "23");
+            size = ARGS_SIZE(args);
+
+            hopt_add_option("o", 0, 0, &o_mock, NULL);
+            hopt_add_option("v", 0, 0, &v_mock, NULL);
+            hopt_add_option("p", 0, 0, &p_mock, NULL);
+            hopt_add_option("d", 0, 0, &d_mock, NULL);
+            hopt_add_option("s", 0, 0, &s_mock, NULL);
+            hopt_add_option("a", 1, HOPT_TYPE_INT, &a_mock, NULL);
+            result = hopt(size, args);
+
+            printf("%d - %s\n", result, hopt_strerror());
+            EXPECTS(result == 2);
+            EXPECTS(o_mock == true);
+            EXPECTS(v_mock == true);
+            EXPECTS(p_mock == false);
+            EXPECTS(d_mock == true);
+            EXPECTS(s_mock == true);
+            EXPECTS(a_mock == 23);
+        }
+
+        CONTEXT("with arguments")
+        {
+
+            IT("should returns an error if there is a wrong order")
+            {
+                hopt_free();
+                hopt_reset();
+
+                bool    mock = false;
+
+                char* args[] = CREATE_ARGS("-ovdas", "23");
+                size = ARGS_SIZE(args);
+
+                hopt_add_option("o", 0, 0, &mock, NULL);
+                hopt_add_option("v", 0, 0, &mock, NULL);
+                hopt_add_option("p", 0, 0, &mock, NULL);
+                hopt_add_option("d", 0, 0, &mock, NULL);
+                hopt_add_option("s", 0, 0, &mock, NULL);
+                hopt_add_option("a", 1, HOPT_TYPE_INT, &mock, NULL);
+                result = hopt(size, args);
+
+                EXPECTS(result == -1);
+                EXPECTS_STR_EQ(hopt_strerror(), "hopt: option -a is in bad order, he need argument(s) but is not in last position in a string of shorts options.");
+            }
+        
+
+            IT("should works with correct order")
+            {
+                hopt_free();
+                hopt_reset();
+
+                bool    mock = false;
+
+                char* args[] = CREATE_ARGS("-ovdas", "23");
+                size = ARGS_SIZE(args);
+
+                hopt_add_option("o", 0, 0, &mock, NULL);
+                hopt_add_option("v", 0, 0, &mock, NULL);
+                hopt_add_option("p", 0, 0, &mock, NULL);
+                hopt_add_option("d", 0, 0, &mock, NULL);
+                hopt_add_option("s", 0, 0, &mock, NULL);
+                hopt_add_option("a", 1, HOPT_TYPE_INT, &mock, NULL);
+                result = hopt(size, args);
+
+                EXPECTS(result == -1);
+                EXPECTS_STR_EQ(hopt_strerror(), "hopt: option -a is in bad order, he need argument(s) but is not in last position in a string of shorts options.");
+            }
+
+            IT("misses them")
+            {
+                hopt_free();
+                hopt_reset();
+
+                bool    mock = false;
+
+                char* args[] = CREATE_ARGS("-ovdsa");
+                size = ARGS_SIZE(args);
+
+                hopt_add_option("o", 0, 0, &mock, NULL);
+                hopt_add_option("v", 0, 0, &mock, NULL);
+                hopt_add_option("p", 0, 0, &mock, NULL);
+                hopt_add_option("d", 0, 0, &mock, NULL);
+                hopt_add_option("s", 0, 0, &mock, NULL);
+                hopt_add_option("a", 1, HOPT_TYPE_INT, &mock, NULL);
+                result = hopt(size, args);
+
+                EXPECTS(result == -1);
+                EXPECTS_STR_EQ(hopt_strerror(), "hopt: option -a miss argument(s).");
+            }
+        }
+
+        
+    }
+
+    // ADD OPTIONS
+    TESTS("Add options")
+    {
+        CONTEXT("with no argument")
+        {
+            IT("expects nothing")
+            {
+                hopt_free();
+                hopt_reset();
+
+                char* args[] = CREATE_ARGS("-o");
+                size = ARGS_SIZE(args);
+
+                hopt_add_option((char*)"o", 0, 0, mock, NULL);
+                result = hopt(size, args);
+
+                EXPECTS(result == 1);
+            }
+
+            IT("expects them")
+            {
+                hopt_free();
+                hopt_reset();
+
+                char* args[] = CREATE_ARGS("frr", "-o");
+                size = ARGS_SIZE(args);
+
+                hopt_add_option((char*)"o", 2, 0, mock, NULL);
+                result = hopt(size, args);
+
+                EXPECTS(result == -1);
+                EXPECTS_STR_EQ(hopt_strerror(), "hopt: option -o miss argument(s).");
+            }
+        }
+
+        CONTEXT("with arguments starting by `-`")
+        {
+            IT("numerics")
+            {
+                hopt_free();
+                hopt_reset();
+
+                char* args[] = CREATE_ARGS("-o", "-2321", "32", "-349");
+                size = ARGS_SIZE(args);
+
+                hopt_add_option((char*)"o", 3, HOPT_TYPE_INT, mock, NULL);
+                result = hopt(size, args);
+
+                EXPECTS(result == 4);
+            }
+
+            IT("strings")
+            {
+                hopt_free();
+                hopt_reset();
+
+                char* args[] = CREATE_ARGS("frr", "-o", "-d", "--miaou");
+                size = ARGS_SIZE(args);
+
+                hopt_add_option((char*)"o", 2, 0, mock, NULL);
+                result = hopt(size, args);
+
+                EXPECTS(result == 3);
+            }
+        }
+
+        CONTEXT("with string arguments")
+        {
+            hopt_free();
+            hopt_reset();
+
+            char* args[] = CREATE_ARGS("frr", "--str", "all good ?\n", "yoo", "mister white", "ahah");
+            size = ARGS_SIZE(args);
+
+            hopt_add_option((char*)"-str", 3, 0, str_mock, NULL);
+            result = hopt(size, args);
+
+            EXPECTS(result == 4);
+            EXPECTS_STR_EQ(str_mock[0], "all good ?\n");
+            EXPECTS_STR_EQ(str_mock[1], "yoo");
+            EXPECTS_STR_EQ(str_mock[2], "mister white");
+            EXPECTS(str_mock[3] == NULL);
+            memset(str_mock, 0, sizeof(str_mock));
+        }
+
+        CONTEXT("with char arguments")
+        {
+            hopt_free();
+            hopt_reset();
+
+            char* args[] = CREATE_ARGS("frr", "-c", "128", "all good ?\n", "yoo", "mister white", "ahah");
+            size = ARGS_SIZE(args);
+
+            hopt_add_option((char*)"c", 1, HOPT_TYPE_CHAR, &char_mock, NULL);
+            result = hopt(size, args);
+
+            EXPECTS(result == 2);
+            EXPECTS(char_mock == -128);
+        }
+
+        CONTEXT("with short arguments")
+        {
+            hopt_free();
+            hopt_reset();
+
+            char* args[] = CREATE_ARGS("frr", "-c", "-32769", "all good ?\n", "yoo", "mister white", "ahah"); // bizarre ? Je ne suis pas senser avoir un undefined ici
+            size = ARGS_SIZE(args);
+
+            hopt_add_option((char*)"c", 1, HOPT_TYPE_SHORT, &short_mock, NULL);
+            result = hopt(size, args);
+
+            EXPECTS(result == 2);
+            EXPECTS(short_mock == 32767);
+        }
+
+        CONTEXT("with int arguments")
+        {
+            
+        }
+
+        CONTEXT("with long arguments")
+        {
+            
+        }
+
+        CONTEXT("with variadic arguments")
+        {
+
+        }
+    }
+
+    // UNDEFINED OPTIONS
+    TESTS("Undefined options")
+    {
+        CONTEXT("when it's short options")
+        {
+            IT("should fail")
+            {
+                hopt_free();
+                hopt_reset();
+
+                char* args[] = CREATE_ARGS("test", "-x");
+                size = ARGS_SIZE(args);
+
+                result = hopt(size, args);
+
+                EXPECTS(result == -1);
+                EXPECTS_STR_EQ(hopt_strerror(), "hopt: option -x is undefined.");
+            }
+        }
+        CONTEXT("when it's long options")
+        {
+            IT("should fail")
+            {
+                hopt_free();
+                hopt_reset();
+
+                char* args[] = CREATE_ARGS("test", "--xav");
+                size = ARGS_SIZE(args);
+
+                result = hopt(size, args);
+
+                EXPECTS(result == -1);
+                EXPECTS_STR_EQ(hopt_strerror(), "hopt: option --xav is undefined.");
+            }
+        }
+        CONTEXT("with complexe usages")
+        {
+            IT("should fail at first arg")
+            {
+                hopt_free();
+                hopt_reset();
+
+                char* args[] = CREATE_ARGS("-x");
+                size = ARGS_SIZE(args);
+
+                result = hopt(size, args);
+
+                EXPECTS(result == -1);
+                EXPECTS_STR_EQ(hopt_strerror(), "hopt: option -x is undefined.");
+            }
+            IT("should fail with many options")
+            {
+                hopt_free();
+                hopt_reset();
+
+                char* args[] = CREATE_ARGS("Yoo la team", "x", "hoho=213", "-p=3", "--count", "feur", "-x", "last");
+                size = ARGS_SIZE(args);
+
+                hopt_add_option((char*)"p", 1, HOPT_TYPE_INT, mock, NULL);
+                hopt_add_option((char*)"-count", 1, 0, mock, NULL);
+                result = hopt(size, args);
+
+                EXPECTS(result == -1);
+                EXPECTS_STR_EQ(hopt_strerror(), "hopt: option -x is undefined.");
+            }
+        }
+    }
+
+    // REDEFINED OPTIONS
+    TESTS("Redefined options")
+    {
+        CONTEXT("when it's short options")
+        {
+            IT("should fail")
+            {
+                hopt_free();
+                hopt_reset();
+
+                char* args[] = CREATE_ARGS("test", "-x", "yoo", "miam", "-x", "fra");
+                size = ARGS_SIZE(args);
+
+                hopt_add_option((char*)"x", 0, 0, mock, NULL);
+                result = hopt(size, args);
+
+                EXPECTS(result == -1);
+                EXPECTS_STR_EQ(hopt_strerror(), "hopt: option -x is redefined.");
+            }
+        }
+
+        CONTEXT("when it's long options")
+        {
+            IT("should fail")
+            {
+                hopt_free();
+                hopt_reset();
+
+                char* args[] = CREATE_ARGS("test","test", "--xav", "yoo", "miam", "--xav", "fra");
+                size = ARGS_SIZE(args);
+
+                hopt_add_option((char*)"-xav", 0, 0, mock, NULL);
+                result = hopt(size, args);
+
+                EXPECTS(result == -1);
+                EXPECTS_STR_EQ(hopt_strerror(), "hopt: option --xav is redefined.");
+            }
+        }
+
+        CONTEXT("with complexe usages")
+        {
+            IT("should fail at first arg")
+            {
+                hopt_free();
+                hopt_reset();
+
+                char* args[] = CREATE_ARGS("-x", "-x");
+                size = ARGS_SIZE(args);
+
+                hopt_add_option((char*)"x", 0, 0, mock, NULL);
+                result = hopt(size, args);
+
+                EXPECTS(result == -1);
+                EXPECTS_STR_EQ(hopt_strerror(), "hopt: option -x is redefined.");
+            }
+
+            IT("should fail with many options")
+            {
+                hopt_free();
+                hopt_reset();
+
+                char* args[] = CREATE_ARGS("Yoo la team", "x", "hoho=213", "-p=3", "--count", "feur", "-x", "last", "-x");
+                size = ARGS_SIZE(args);
+
+                hopt_add_option((char*)"x", 0, 0, mock, NULL);
+                hopt_add_option((char*)"p", 1, HOPT_TYPE_INT, mock, NULL);
+                hopt_add_option((char*)"-count", 1, 0, mock, NULL);
+                result = hopt(size, args);
+
+                EXPECTS(result == -1);
+                EXPECTS_STR_EQ(hopt_strerror(), "hopt: option -x is redefined.");
+            }
+        }
+
+        CONTEXT("with allow_redef()")
+        {
+            IT("should allow with long option")
+            {
+                hopt_free();
+                hopt_reset();
+
+                char*   str_mock = NULL;
+
+                char* args[] = CREATE_ARGS("Yoo la team", "x", "hoho=213", "-p=3", "--count", "feur", "-x", "last", "-x");
+                size = ARGS_SIZE(args);
+
+                hopt_allow_redef(false);
+                hopt_add_option((char*)"x", 0, 0, mock, NULL);
+                hopt_add_option((char*)"p", 1, HOPT_TYPE_INT, mock, NULL);
+                hopt_add_option((char*)"-count", 1, 0, &str_mock, NULL);
+                result = hopt(size, args);
+
+                EXPECTS(result == 5);
+                EXPECTS_STR_EQ(str_mock, "feur");
+            }
+        }
+    }
+
+    // Resetter
+    TESTS("Reset hopt settings")
+    {
+
+    }
+    
+    delete (long*)mock;
+    
+    // Résumé final
+    printf("\n📊 RESUME\n");
+    printf("=========\n");
+    printf("Tests passed: %d/%d\n", tests_passed, tests_total);
+    
+    if (tests_passed == tests_total) {
+        printf("🎉 All tests are passed !\n");
+        return 0;
+    } else {
+        printf("💥 %d test(s) failed !\n", tests_total - tests_passed);
+        return 1;
+    }
+}

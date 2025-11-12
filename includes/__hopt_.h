@@ -111,11 +111,16 @@ typedef struct FINDER
 {
 	BOOL			error;
 	BOOL			found;
-	BOOL			strso;		// Know if is a STRing of Shorts Options
+	BOOL			is_short_option;		// Know if is a STRing of Shorts Options
 	unsigned int	last_i;		// Last index, to know the begin position of an option with argument(s)
 	t_hopt_sort*	head;
 	unsigned int	addrs_idx;
 	unsigned int	mandatory_count;	// Follow the count of mandatory option
+
+	unsigned int	i;	// av index
+	unsigned int	l;	// av[i] index
+	unsigned int	n;	// hopt_map index
+	unsigned int	m;	// hopt_map's aliases index
 }	t_FINDER;
 
 typedef struct hopt
@@ -191,6 +196,8 @@ int
 SORT(int ac, /*const*/ char** av, t_hopt_sort* head);
 void
 FINDER(t_hopt* hopt_restrict h);
+void
+BETTER_FINDER(t_hopt* hopt_restrict h);
 int
 __oac_calcul_variadic_count(t_hopt* hopt_restrict h, unsigned int idx, unsigned int c);
 void

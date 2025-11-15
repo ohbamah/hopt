@@ -47,6 +47,7 @@ compile:
 
 # Tests unitaires avec votre système
 unit:
+	make -C ..
 	@echo -e "$(YELLOW)$(BOLD)Compilation des tests unitaires...$(CLASSIC)"
 	@clang++ -fPIE unit_tester.cpp -Wno-unused-value -Wno-writable-strings -L.. -lhopt -o unit_tests
 	@echo -e "$(YELLOW)$(BOLD)Exécution des tests unitaires...$(CLASSIC)"

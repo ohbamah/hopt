@@ -199,7 +199,7 @@ FINDER(t_hopt* hopt_restrict h);
 void
 BETTER_FINDER(t_hopt* hopt_restrict h);
 int
-__oac_calcul_variadic_count(t_hopt* hopt_restrict h, unsigned int idx, unsigned int c);
+__oac_calcul_variadic_count(t_hopt* hopt_restrict h, BOOL is_the_last);
 void
 __hopt_generate_help_menu(t_hopt_state* hopt_restrict state);
 void

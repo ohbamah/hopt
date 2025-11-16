@@ -392,7 +392,7 @@ EXECUTOR(t_hopt* hopt_restrict h, const char* option, unsigned int len)
 			if (is_valid_option(alias, option, len))
 			{
 				if (h->oac == HOPT_VARIADIC_ARGUMENTS)
-					h->oac = __oac_calcul_variadic_count(h, h->f.i, h->f.l);
+					h->oac = __oac_calcul_variadic_count(h, is_the_last);
 
 				if (!i_hopt_flags[h->f.n] || (i_hopt_redef_allowed && i_hopt_redef_overwrt))
 				{
@@ -697,22 +697,20 @@ BETTER_FINDER(t_hopt* hopt_restrict h)
 
 inline
 int
-__oac_calcul_variadic_count(t_hopt* hopt_restrict h, unsigned int /*av index */ idx, unsigned int /*av[X] index*/ c)
+__oac_calcul_variadic_count(t_hopt* hopt_restrict h, BOOL is_the_last)
 {
 	int		i = 0;
-	int		index = idx;
+	int		index = h->f.i;
 	BOOL	is_an_option = FALSE;
 
-	if (h->f.is_short_option && (h->av[index][c + 1] != '\0' && (h->av[index][c + 1] != '=' && h->oac == 1)))
+	if (h->f.is_short_option && !is_the_last)
 		return (0);
 	++index;
-	for ( ; i < __INT_MAX__ && h->av[index] ; )
+	for ( ; h->av[index] ; ++index, ++i)
 	{
-		is_an_option = h->av[index][0] == '-' && strnlen(&h->av[index][0], 2) > 1;
-		if (is_an_option || !h->av[index])
+		is_an_option = h->av[index][0] == '-';
+		if (is_an_option)
 			break ;
-		++index;
-		++i;
 	}
 	return (i);
 }

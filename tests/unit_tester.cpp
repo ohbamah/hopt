@@ -156,9 +156,7 @@ int main(void)
                 EXPECTS(result == -1);
                 EXPECTS_STR_EQ(hopt_strerror(), "hopt: option -a miss argument(s).");
             }
-        }
-
-        
+        }        
     }
 
     // ADD OPTIONS
@@ -266,7 +264,7 @@ int main(void)
             hopt_free();
             hopt_reset();
 
-            char* args[] = CREATE_ARGS("frr", "-c", "-32769", "all good ?\n", "yoo", "mister white", "ahah"); // bizarre ? Je ne suis pas senser avoir un undefined ici
+            char* args[] = CREATE_ARGS("frr", "-c", "-32769", "all good ?\n", "yoo", "mister white", "ahah");
             size = ARGS_SIZE(args);
 
             hopt_add_option((char*)"c", 1, HOPT_TYPE_SHORT, &short_mock, NULL);
@@ -278,17 +276,58 @@ int main(void)
 
         CONTEXT("with int arguments")
         {
-            
+            hopt_free();
+            hopt_reset();
+
+            char* args[] = CREATE_ARGS("frr", "-c", "-214123432", "all good ?\n", "yoo", "mister white", "ahah");
+            size = ARGS_SIZE(args);
+
+            hopt_add_option((char*)"c", 1, HOPT_TYPE_INT, &int_mock, NULL);
+            result = hopt(size, args);
+
+            EXPECTS(result == 2);
+            EXPECTS(int_mock == -214123432);
         }
 
         CONTEXT("with long arguments")
         {
-            
+            hopt_free();
+            hopt_reset();
+
+            char* args[] = CREATE_ARGS("frr", "--count", " -32769", "all good ?\n", "yoo", "mister white", "ahah");
+            size = ARGS_SIZE(args);
+
+            hopt_add_option((char*)"-count", 0, 0, &short_mock, NULL);
+            result = hopt(size, args);
+
+            EXPECTS(result == 1);
         }
 
         CONTEXT("with variadic arguments")
         {
+            hopt_free();
+            hopt_reset();
 
+            char* mock[10];
+
+            char* args[] = CREATE_ARGS("-v", "123", "321", "324", "543", "0123", "9543", "483", "jtsrnfk", "sekfmse", "fse");
+            size = ARGS_SIZE(args);
+
+            hopt_add_option((char*)"v", HOPT_VARIADIC_ARGUMENTS, 0, mock, NULL);
+            result = hopt(size, args);
+
+            EXPECTS(result == 11);
+            printf("result %d\n", result);
+            EXPECTS_STR_EQ(mock[0], "123");
+            EXPECTS_STR_EQ(mock[1], "321");
+            EXPECTS_STR_EQ(mock[2], "324");
+            EXPECTS_STR_EQ(mock[3], "543");
+            EXPECTS_STR_EQ(mock[4], "0123");
+            EXPECTS_STR_EQ(mock[5], "9543");
+            EXPECTS_STR_EQ(mock[6], "483");
+            EXPECTS_STR_EQ(mock[7], "jtsrnfk");
+            EXPECTS_STR_EQ(mock[8], "sekfmse");
+            EXPECTS_STR_EQ(mock[9], "fse");
         }
     }
 
@@ -458,10 +497,109 @@ int main(void)
         }
     }
 
-    // Resetter
-    TESTS("Reset hopt settings")
+    // AV sorted
+    TESTS("AV sorted")
     {
+        CONTEXT("with options")
+        {
+            IT("should sort options")
+            {
+                hopt_free();
+                hopt_reset();
 
+                char* args[] = CREATE_ARGS("file1", "file2", "--option1", "file3", "--option2", "arg option", "file4", "--last_option");
+                size = ARGS_SIZE(args);
+
+                hopt_add_option((char*)"-option1", 0, 0, mock, NULL);
+                hopt_add_option((char*)"-option2", 1, 0, mock, NULL);
+                hopt_add_option((char*)"-last_option", 0, 0, mock, NULL);
+                result = hopt(size, args);
+
+                EXPECTS(result == 4);
+                EXPECTS_STR_EQ(args[0], "./prog");
+                EXPECTS_STR_EQ(args[1], "--option1");
+                EXPECTS_STR_EQ(args[2], "--option2");
+                EXPECTS_STR_EQ(args[3], "arg option");
+                EXPECTS_STR_EQ(args[4], "--last_option");
+                EXPECTS_STR_EQ(args[5], "file1");
+                EXPECTS_STR_EQ(args[6], "file2");
+                EXPECTS_STR_EQ(args[7], "file3");
+                EXPECTS_STR_EQ(args[8], "file4");
+                EXPECTS(args[9] == NULL);
+            }
+        }
+
+        CONTEXT("with disable_sort()")
+        {
+            IT("should not sort")
+            {
+                hopt_free();
+                hopt_reset();
+
+                char* args[] = CREATE_ARGS("file1", "file2", "--option1", "file3", "--option2", "arg option", "file4", "--last_option");
+                size = ARGS_SIZE(args);
+
+                hopt_disable_sort();
+                hopt_add_option((char*)"-option1", 0, 0, mock, NULL);
+                hopt_add_option((char*)"-option2", 1, 0, mock, NULL);
+                hopt_add_option((char*)"-last_option", 0, 0, mock, NULL);
+                result = hopt(size, args);
+
+                EXPECTS(result == 4);
+                EXPECTS_STR_EQ(args[0], "./prog");
+                EXPECTS_STR_EQ(args[1], "file1");
+                EXPECTS_STR_EQ(args[2], "file2");
+                EXPECTS_STR_EQ(args[3], "--option1");
+                EXPECTS_STR_EQ(args[4], "file3");
+                EXPECTS_STR_EQ(args[5], "--option2");
+                EXPECTS_STR_EQ(args[6], "arg option");
+                EXPECTS_STR_EQ(args[7], "file4");
+                EXPECTS_STR_EQ(args[8], "--last_option");
+                EXPECTS(args[9] == NULL);
+            }
+        }
+
+        CONTEXT("without options")
+        {
+            IT("should not sort")
+            {
+                hopt_free();
+                hopt_reset();
+
+                char* args[] = CREATE_ARGS("file1", "file2", "file3", "file4");
+                size = ARGS_SIZE(args);
+
+                hopt_add_option((char*)"-option1", 0, 0, mock, NULL);
+                hopt_add_option((char*)"-option2", 1, 0, mock, NULL);
+                hopt_add_option((char*)"-last_option", 0, 0, mock, NULL);
+                result = hopt(size, args);
+
+                EXPECTS(result == 0);
+                EXPECTS_STR_EQ(args[0], "./prog");
+                EXPECTS_STR_EQ(args[1], "file1");
+                EXPECTS_STR_EQ(args[2], "file2");
+                EXPECTS_STR_EQ(args[3], "file3");
+                EXPECTS_STR_EQ(args[4], "file4");
+                EXPECTS(args[5] == NULL);
+            }
+        }
+
+        CONTEXT("with no AV")
+        {
+            IT("should do nothing")
+            {
+                hopt_free();
+                hopt_reset();
+
+                char* args[] = CREATE_ARGS(NULL);
+                size = ARGS_SIZE(args);
+
+                hopt_add_option((char*)"-y", 0, 0, mock, NULL);
+                result = hopt(size, args);
+
+                EXPECTS(result == 0);
+            }
+        }
     }
     
     delete (long*)mock;

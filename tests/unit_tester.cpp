@@ -31,6 +31,14 @@ check_expectation_str_ne(const char* str1, const char* str2)
     check_expectation(!strcmp(str1, str2), (str1 + std::string(" != ") + str2).data());
 }
 
+void*
+subcommand(void* arg)
+{
+    char* ptr = *(char**)arg;
+    // ptr = 
+    return ptr;
+}
+
 int main(void)
 {
     printf("🚀 HOPT Unit Tests\n");
@@ -584,7 +592,7 @@ int main(void)
             }
         }
 
-        CONTEXT("with no AV")
+        CONTEXT("without AV")
         {
             IT("should do nothing")
             {
@@ -598,6 +606,253 @@ int main(void)
                 result = hopt(size, args);
 
                 EXPECTS(result == 0);
+            }
+        }
+    }
+
+    TESTS("Subcommands")
+    {
+        char* returns;
+
+        CONTEXT("check order")
+        {
+
+        }
+
+        CONTEXT("without error")
+        {
+            IT("should work")
+                {
+                hopt_free();
+                hopt_reset();
+
+                char* arg_test = "abcd";
+
+                char* args[] = CREATE_ARGS("run", "build", "-f");
+                size = ARGS_SIZE(args);
+
+                hopt_subcmd((char*)"run", subcommand, &arg_test, (void**)&returns)
+                {
+                    hopt_subcmd((char*)"build", subcommand, &arg_test, (void**)&returns)
+                    {
+                        hopt_add_option((char*)"f", 0, 0, mock, NULL);
+                    }
+                }
+                result = hopt(size, args);
+
+                EXPECTS(result == 3);
+            }
+
+            IT("should work")
+            {
+                hopt_free();
+                hopt_reset();
+
+                char* arg_test = "abcd";
+
+                char* args[] = CREATE_ARGS("run", "-f", "build");
+                size = ARGS_SIZE(args);
+
+                hopt_subcmd((char*)"run", subcommand, &arg_test, (void**)&returns)
+                {
+                    hopt_add_option((char*)"f", 0, 0, mock, NULL);
+                    hopt_subcmd((char*)"build", subcommand, &arg_test, (void**)&returns)
+                    {
+                    }
+                }
+                result = hopt(size, args);
+
+                EXPECTS(result == 3);
+            }
+
+            IT("should work")
+            {
+                hopt_free();
+                hopt_reset();
+
+                char* arg_test = "abcd";
+
+                char* args[] = CREATE_ARGS("-f", "run", "build");
+                size = ARGS_SIZE(args);
+
+                hopt_add_option((char*)"f", 0, 0, mock, NULL);
+                hopt_subcmd((char*)"run", subcommand, &arg_test, (void**)&returns)
+                {
+                    hopt_subcmd((char*)"build", subcommand, &arg_test, (void**)&returns)
+                    {
+                    }
+                }
+                result = hopt(size, args);
+
+                EXPECTS(result == 3);
+            }
+        }
+
+        CONTEXT("with undefined options")
+        {
+            IT("should returns an error")
+            {
+                hopt_free();
+                hopt_reset();
+
+                char* arg_test = "abcd";
+
+                char* args[] = CREATE_ARGS("run", "-f", "build");
+                size = ARGS_SIZE(args);
+
+                hopt_subcmd((char*)"run", subcommand, &arg_test, (void**)&returns)
+                {
+                    hopt_subcmd((char*)"build", subcommand, &arg_test, (void**)&returns)
+                    {
+                        hopt_add_option((char*)"f", 0, 0, mock, NULL);
+                    }
+                }
+                result = hopt(size, args);
+
+                EXPECTS(result == -1);
+                EXPECTS_STR_EQ(hopt_strerror(), "hopt: option -f is undefined.");
+            }
+
+            IT("should returns an error")
+            {
+                hopt_free();
+                hopt_reset();
+
+                char* arg_test = "abcd";
+
+                char* args[] = CREATE_ARGS("-f", "run", "build");
+                size = ARGS_SIZE(args);
+
+                hopt_subcmd((char*)"run", subcommand, &arg_test, (void**)&returns)
+                {
+                    hopt_subcmd((char*)"build", subcommand, &arg_test, (void**)&returns)
+                    {
+                        hopt_add_option((char*)"f", 0, 0, mock, NULL);
+                    }
+                }
+                result = hopt(size, args);
+
+                EXPECTS(result == -1);
+                EXPECTS_STR_EQ(hopt_strerror(), "hopt: option -f is undefined.");
+            }
+
+
+            IT("should returns an error")
+            {
+                hopt_free();
+                hopt_reset();
+
+                char* arg_test = "abcd";
+
+                char* args[] = CREATE_ARGS("-f", "run", "build");
+                size = ARGS_SIZE(args);
+
+                hopt_subcmd((char*)"run", subcommand, &arg_test, (void**)&returns)
+                {
+                    hopt_add_option((char*)"f", 0, 0, mock, NULL);
+                    hopt_subcmd((char*)"build", subcommand, &arg_test, (void**)&returns)
+                    {
+                    }
+                }
+                result = hopt(size, args);
+
+                EXPECTS(result == -1);
+                EXPECTS_STR_EQ(hopt_strerror(), "hopt: option -f is undefined.");
+            }
+
+            IT("should returns an error")
+            {
+                hopt_free();
+                hopt_reset();
+
+                char* arg_test = "abcd";
+
+                char* args[] = CREATE_ARGS("run", "build", "-f");
+                size = ARGS_SIZE(args);
+
+                hopt_subcmd((char*)"run", subcommand, &arg_test, (void**)&returns)
+                {
+                    hopt_add_option((char*)"f", 0, 0, mock, NULL);
+                    hopt_subcmd((char*)"build", subcommand, &arg_test, (void**)&returns)
+                    {
+                    }
+                }
+                result = hopt(size, args);
+
+                EXPECTS(result == -1);
+                EXPECTS_STR_EQ(hopt_strerror(), "hopt: option -f is undefined.");
+            }
+
+            IT("should returns an error")
+            {
+                hopt_free();
+                hopt_reset();
+
+                char* arg_test = "abcd";
+
+                char* args[] = CREATE_ARGS("run", "build", "-f");
+                size = ARGS_SIZE(args);
+
+                hopt_add_option((char*)"f", 0, 0, mock, NULL);
+                hopt_subcmd((char*)"run", subcommand, &arg_test, (void**)&returns)
+                {
+                    hopt_subcmd((char*)"build", subcommand, &arg_test, (void**)&returns)
+                    {
+                    }
+                }
+                result = hopt(size, args);
+
+                EXPECTS(result == -1);
+                EXPECTS_STR_EQ(hopt_strerror(), "hopt: option -f is undefined.");
+            }
+
+            IT("should returns an error")
+            {
+                hopt_free();
+                hopt_reset();
+
+                char* arg_test = "abcd";
+
+                char* args[] = CREATE_ARGS("run", "-f", "build");
+                size = ARGS_SIZE(args);
+
+                hopt_add_option((char*)"f", 0, 0, mock, NULL);
+                hopt_subcmd((char*)"run", subcommand, &arg_test, (void**)&returns)
+                {
+                    hopt_subcmd((char*)"build", subcommand, &arg_test, (void**)&returns)
+                    {
+                    }
+                }
+                result = hopt(size, args);
+
+                EXPECTS(result == -1);
+                EXPECTS_STR_EQ(hopt_strerror(), "hopt: option -f is undefined.");
+            }
+        }
+
+        CONTEXT("with redefined options")
+        {
+            IT("should returns an error")
+            {
+                hopt_free();
+                hopt_reset();
+
+                char* arg_test = "abcd";
+
+                char* args[] = CREATE_ARGS("run", "-f", "build");
+                size = ARGS_SIZE(args);
+
+                hopt_subcmd((char*)"run", subcommand, &arg_test, (void**)&returns)
+                {
+                    hopt_subcmd((char*)"build", subcommand, &arg_test, (void**)&returns)
+                    {
+                        hopt_add_option((char*)"f", 0, 0, mock, NULL);
+                    }
+                }
+                result = hopt(size, args);
+
+                EXPECTS(result == -1);
+                EXPECTS_STR_EQ(hopt_strerror(), "hopt: option -f is undefined.");
             }
         }
     }

@@ -498,6 +498,7 @@ BETTER_FINDER(t_hopt* hopt_restrict h)
 
 		if (is_an_option)
 		{
+			is_subcmd = FALSE;
 			if (argument[1] != '-')
 				h->f.is_short_option = TRUE;
 			else
@@ -535,6 +536,8 @@ BETTER_FINDER(t_hopt* hopt_restrict h)
 
 		if (!is_an_option && !is_subcmd && i_hopt_end_on_arg_v)
 			break ;
+		else if (is_subcmd)
+			++h->n_parsed;
 	}
 	__execute_subcommand_if_exists(hopt_current_state);
 }

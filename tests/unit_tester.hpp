@@ -14,7 +14,10 @@ extern "C" {
 # define CUSTOM_SCOPE_WITH_ENTRIES(first, last) \
     for (bool ended = (first, true) ; ended ; ended = (last, false))
 
-# define TESTS(title)            CUSTOM_SCOPE_WITH_ENTRIES(printf("\n🧪 " title "\n"), 0)
+# define DEBUG(var)             printf("%s: %d\n", #var, var);
+# define DEBUG_STR(var)         printf("%s: %s\n", #var, var);
+
+# define TESTS(title)           CUSTOM_SCOPE_WITH_ENTRIES(printf("\n🧪 " title "\n"), 0)
 # define CONTEXT(title)         CUSTOM_SCOPE_WITH_ENTRIES(printf("  📁 " title "\n"), 0)
 # define IT(title)              CUSTOM_SCOPE_WITH_ENTRIES(printf("      ▶  " title "\n"), 0)
 

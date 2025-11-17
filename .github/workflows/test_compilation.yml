@@ -15,7 +15,7 @@ jobs:
         sudo apt-get update
         sudo apt-get install -y clang make
     - name: test
-      run: make re
+      run: cd tests && make unit
   
   macos:
     runs-on: macos-latest
@@ -23,7 +23,7 @@ jobs:
     - name: checkout
       uses: actions/checkout@v4
     - name: test
-      run: make re
+      run: cd tests && make unit
     
   windows:
     runs-on: windows-latest

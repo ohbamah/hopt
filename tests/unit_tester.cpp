@@ -85,7 +85,6 @@ int main(void)
             hopt_add_option("a", 1, HOPT_TYPE_INT, &a_mock, NULL);
             result = hopt(size, args);
 
-            printf("%d - %s\n", result, hopt_strerror());
             EXPECTS(result == 2);
             EXPECTS(o_mock == true);
             EXPECTS(v_mock == true);
@@ -325,7 +324,6 @@ int main(void)
             result = hopt(size, args);
 
             EXPECTS(result == 11);
-            printf("result %d\n", result);
             EXPECTS_STR_EQ(mock[0], "123");
             EXPECTS_STR_EQ(mock[1], "321");
             EXPECTS_STR_EQ(mock[2], "324");
@@ -669,7 +667,6 @@ int main(void)
                 }
                 result = hopt(size, args);
 
-                DEBUG_STR(hopt_strerror())
                 EXPECTS(result == 3);
                 EXPECTS_STR_EQ(args[0], "./prog");
                 EXPECTS_STR_EQ(args[1], "run");
@@ -875,6 +872,42 @@ int main(void)
 
                 EXPECTS(result == -1);
                 EXPECTS_STR_EQ(hopt_strerror(), "hopt: option -f is undefined.");
+            }
+        }
+
+        CONTEXT("with same option at different level")
+        {
+            IT("should work")
+            {
+                hopt_free();
+                hopt_reset();
+
+                char* arg_test = "abcd";
+
+                char* args[] = CREATE_ARGS("yo", "-f", "run", "-f", "allo", "build", "-f", "miam");
+                size = ARGS_SIZE(args);
+
+                hopt_add_option((char*)"f", 0, 0, mock, NULL);
+                hopt_subcmd((char*)"run", subcommand, &arg_test, (void**)&returns)
+                {
+                    hopt_add_option((char*)"f", 0, 0, mock, NULL);
+                    hopt_subcmd((char*)"build", subcommand, &arg_test, (void**)&returns)
+                    {
+                        hopt_add_option((char*)"f", 0, 0, mock, NULL);
+                    }
+                }
+                result = hopt(size, args);
+
+                EXPECTS(result == 5);
+                EXPECTS_STR_EQ(args[0], "./prog");
+                EXPECTS_STR_EQ(args[1], "-f");
+                EXPECTS_STR_EQ(args[2], "run");
+                EXPECTS_STR_EQ(args[3], "-f");
+                EXPECTS_STR_EQ(args[4], "build");
+                EXPECTS_STR_EQ(args[5], "-f");
+                EXPECTS_STR_EQ(args[6], "yo");
+                EXPECTS_STR_EQ(args[7], "allo");
+                EXPECTS_STR_EQ(args[8], "miam");
             }
         }
     }

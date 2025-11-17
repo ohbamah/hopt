@@ -358,6 +358,13 @@ SLAVE(t_hopt* hopt_restrict h, const char* option, unsigned int len)
 }
 
 void
+MASTER(t_hopt* hopt_restrict h)
+{
+	if (!hopt_g_disable_sort)
+		hopt_add_back(&h->f.head, hopt_new_node(h->f.i, h->oac));
+}
+
+void
 EXECUTOR(t_hopt* hopt_restrict h, const char* option, unsigned int len)
 {
 	char**	aliases;
@@ -537,7 +544,10 @@ BETTER_FINDER(t_hopt* hopt_restrict h)
 		if (!is_an_option && !is_subcmd && i_hopt_end_on_arg_v)
 			break ;
 		else if (is_subcmd)
+		{
+			MASTER(h);
 			++h->n_parsed;
+		}
 	}
 	__execute_subcommand_if_exists(hopt_current_state);
 }

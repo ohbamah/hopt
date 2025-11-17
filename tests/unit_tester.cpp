@@ -628,7 +628,7 @@ int main(void)
 
                 char* arg_test = "abcd";
 
-                char* args[] = CREATE_ARGS("run", "build", "-f");
+                char* args[] = CREATE_ARGS("yo", "run", "build", "allo", "-f", "miam");
                 size = ARGS_SIZE(args);
 
                 hopt_subcmd((char*)"run", subcommand, &arg_test, (void**)&returns)
@@ -641,6 +641,13 @@ int main(void)
                 result = hopt(size, args);
 
                 EXPECTS(result == 3);
+                EXPECTS_STR_EQ(args[0], "./prog");
+                EXPECTS_STR_EQ(args[1], "run");
+                EXPECTS_STR_EQ(args[2], "build");
+                EXPECTS_STR_EQ(args[3], "-f");
+                EXPECTS_STR_EQ(args[4], "yo");
+                EXPECTS_STR_EQ(args[5], "allo");
+                EXPECTS_STR_EQ(args[6], "miam");
             }
 
             IT("should work")
@@ -650,7 +657,7 @@ int main(void)
 
                 char* arg_test = "abcd";
 
-                char* args[] = CREATE_ARGS("run", "-f", "build");
+                char* args[] = CREATE_ARGS("yo", "run", "allo", "-f", "build", "miam");
                 size = ARGS_SIZE(args);
 
                 hopt_subcmd((char*)"run", subcommand, &arg_test, (void**)&returns)
@@ -662,7 +669,15 @@ int main(void)
                 }
                 result = hopt(size, args);
 
+                DEBUG_STR(hopt_strerror())
                 EXPECTS(result == 3);
+                EXPECTS_STR_EQ(args[0], "./prog");
+                EXPECTS_STR_EQ(args[1], "run");
+                EXPECTS_STR_EQ(args[2], "-f");
+                EXPECTS_STR_EQ(args[3], "build");
+                EXPECTS_STR_EQ(args[4], "yo");
+                EXPECTS_STR_EQ(args[5], "allo");
+                EXPECTS_STR_EQ(args[6], "miam");
             }
 
             IT("should work")
@@ -672,7 +687,7 @@ int main(void)
 
                 char* arg_test = "abcd";
 
-                char* args[] = CREATE_ARGS("-f", "run", "build");
+                char* args[] = CREATE_ARGS("yo", "-f", "allo", "run", "build", "miam");
                 size = ARGS_SIZE(args);
 
                 hopt_add_option((char*)"f", 0, 0, mock, NULL);
@@ -685,6 +700,13 @@ int main(void)
                 result = hopt(size, args);
 
                 EXPECTS(result == 3);
+                EXPECTS_STR_EQ(args[0], "./prog");
+                EXPECTS_STR_EQ(args[1], "-f");
+                EXPECTS_STR_EQ(args[2], "run");
+                EXPECTS_STR_EQ(args[3], "build");
+                EXPECTS_STR_EQ(args[4], "yo");
+                EXPECTS_STR_EQ(args[5], "allo");
+                EXPECTS_STR_EQ(args[6], "miam");
             }
         }
 
@@ -839,7 +861,7 @@ int main(void)
 
                 char* arg_test = "abcd";
 
-                char* args[] = CREATE_ARGS("run", "-f", "build");
+                char* args[] = CREATE_ARGS("yo", "run", "-f", "build");
                 size = ARGS_SIZE(args);
 
                 hopt_subcmd((char*)"run", subcommand, &arg_test, (void**)&returns)

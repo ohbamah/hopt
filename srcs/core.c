@@ -86,26 +86,6 @@ SORT(int ac, /*const*/ char** av, t_hopt_sort* head)
 	return (count);
 }
 
-// static inline
-// void
-// FINDER_ERROR(t_hopt* hopt_restrict h, int errcode, unsigned int i, int j)
-// {
-// 	memset(&hopt_cerr, 0, sizeof(hopt_cerr));
-// 	h->f.error = TRUE;
-// 	hopt_nerr = errcode;
-// 	if (h->f.is_short_option == TRUE)
-// 		strncpy(hopt_cerr, &h->av[i][j], 1);
-// 	else
-// 	{
-// 		if (strlen(&h->av[i][1]) < sizeof(hopt_cerr))
-// 			strncpy(hopt_cerr, &h->av[i][1], strlen(&h->av[i][1]));
-// 		else
-// 			strncpy(hopt_cerr, &h->av[i][1], 15);
-// 	}
-// 	if (i_hopt_auto_help_v == TRUE && (i_hopt_help_flagsw & errcode))
-// 		printf("%s\n", hopt_help_menu(i_hopt_cmd_name));
-// }
-
 static inline
 void
 ERROR_SYSTEM(t_hopt* hopt_restrict h, int errcode, const char* option, unsigned int len)
@@ -118,44 +98,6 @@ ERROR_SYSTEM(t_hopt* hopt_restrict h, int errcode, const char* option, unsigned 
 	else
 		strncpy(hopt_cerr, option, HOPT_MAX_SSTR_SIZE - 2);
 }
-
-// static inline
-// void
-// FINDER_WRITE_TYPE(char* arg, unsigned int j, unsigned int opt_idx)
-// {
-// 	long long	at = 0LL;
-// 	double		ad = 0.0;
-// 	switch (i_hopt_maps[opt_idx].flag)
-// 	{
-// 		case HOPT_TYPE_STR:
-// 			memcpy(i_hopt_maps[opt_idx].mem + j * sizeof(char*), &arg, sizeof(char*));
-// 			break;
-// 		case HOPT_TYPE_CHAR:
-// 			at = atoi(arg);
-// 			*((char*)(i_hopt_maps[opt_idx].mem) + j) = (char)at;
-// 			break;
-// 		case HOPT_TYPE_SHORT:
-// 			at = atoi(arg);
-// 			*((short*)(i_hopt_maps[opt_idx].mem) + j) = (short)at;
-// 			break;
-// 		case HOPT_TYPE_INT:
-// 			at = atoi(arg);
-// 			*((int*)(i_hopt_maps[opt_idx].mem) + j) = (int)at;
-// 			break;
-// 		case HOPT_TYPE_LONG:
-// 			at = atoll(arg);
-// 			*((long long*)(i_hopt_maps[opt_idx].mem) + j) = at;
-// 			break;
-// 		case HOPT_TYPE_FLOAT:
-// 			ad = (float)atof(arg);
-// 			*((float*)(i_hopt_maps[opt_idx].mem) + j) = (float)ad;
-// 			break;
-// 		case HOPT_TYPE_DOUBLE:
-// 			ad = (double)atof(arg);
-// 			*((double*)(i_hopt_maps[opt_idx].mem) + j) = ad;
-// 			break;
-// 	}
-// }
 
 static inline
 void
@@ -194,59 +136,6 @@ TYPOS(t_hopt* hopt_restrict h, char* arg, unsigned int i, t_hopt_map* current_ma
 			break;
 	}
 }
-
-// static
-// int
-// FINDER_WRITE(t_hopt* hopt_restrict h, unsigned int /*av index*/ idx, unsigned int /*av[idx] index*/ c, unsigned int opt_idx)
-// {
-// 	unsigned int	j 			= 0;
-// 	unsigned int	tmp 		= idx;
-
-// 	if (i_hopt_maps[opt_idx].mandatory == TRUE && i_hopt_flags[opt_idx] == FALSE)
-// 		++h->f.mandatory_count;
-// 	if ((i_hopt_maps[opt_idx].flag & 0xF) != HOPT_TYPE_CB)
-// 	{
-// 		if (h->oac == 1)
-// 		{
-// 			printf("1 ? - %s\n", h->av[idx]);
-// 			char*	value = strchr(h->av[idx], '=');
-// 			if (value)
-// 			{
-// 				FINDER_WRITE_TYPE(&value[1], j, opt_idx);
-// 				return (idx);
-// 			}
-// 		}
-// 		if (h->oac >= 1)
-// 		{
-// 			++idx;
-// 			if (!h->av[idx])
-// 				FINDER_ERROR(h, HOPT_MISSOARGC, idx - 1, c);
-// 			while (h->f.error == FALSE && h->av[idx] && j < (unsigned int)h->oac)
-// 			{
-// 				printf("%d <=> %s\n", h->oac, h->av[idx]);
-// 				if ((!h->av[idx + 1] && j < h->oac - 1U)) // || (h->av[idx][0] == '-' && strnlen(h->av[idx], 2) > 1 && !isdigit(h->av[idx][1]))
-// 					FINDER_ERROR(h, HOPT_MISSOARGC, tmp, c);
-// 				FINDER_WRITE_TYPE(h->av[idx], j, opt_idx);
-// 				++j;
-// 				++idx;
-// 				++h->f.addrs_idx;
-// 				++h->n_parsed;
-// 			}
-// 			// ++idx;
-// 			printf("%d <=> %s\n", h->oac, h->av[idx]);
-// 		}
-// 		else if (h->oac == 0)
-// 			++(*((BOOL*)i_hopt_maps[opt_idx].mem));
-// 	}
-// 	else
-// 	{
-// 		if ((i_hopt_maps[opt_idx].cb)(h->oac, &h->av[idx], i_hopt_maps[opt_idx].cb_arg) == -1)
-// 			return (-1);
-// 		h->n_parsed += h->oac;
-// 		idx += h->oac;
-// 	}
-// 	return (idx);
-// }
 
 static
 void
@@ -427,10 +316,6 @@ EXECUTOR(t_hopt* hopt_restrict h, const char* option, unsigned int len)
 		if (!h->f.error && h->f.found)
 			SLAVE(h, option, len);
 	}
-	// if (!h->f.error && !h->f.found && !i_hopt_undef_allowed)
-	// 	FINDER_ERROR(h, HOPT_UNDEFINED, i, j);
-	// else if (h->f.error == FALSE && h->av[i])
-	// 	is_an_option = h->av[i][0] == '-' && strnlen(&h->av[i][0], 2) > 1;
 }
 
 BOOL
@@ -551,162 +436,6 @@ BETTER_FINDER(t_hopt* hopt_restrict h)
 	}
 	__execute_subcommand_if_exists(hopt_current_state);
 }
-
-// Trizomic function
-// void
-// FINDER(t_hopt* hopt_restrict h)
-// {
-// 	unsigned int	i;
-// 	int				j;
-// 	unsigned int	n;
-// 	unsigned int	m;
-
-// 	i = 1;
-// 	while (h->f.error == FALSE && i < (unsigned int)h->ac)
-// 	{
-// 		int avi_size = strlen(&h->av[i][1]);
-// 		BOOL is_an_option = h->av[i][0] == '-' && strnlen(&h->av[i][0], 2) > 1;
-// 		if (is_an_option)
-// 		{
-// 			h->f.is_short_option = FALSE;
-// 			if (h->av[i][1] != '-' && strnlen(&h->av[i][1], 2) > 1)
-// 				h->f.is_short_option = TRUE;
-// 			j = 1;
-// 			while (h->f.error == FALSE && h->av[i] && (h->av[i][j] && h->av[i][j] != '=') && is_an_option)
-// 			{
-// 				n = 0;
-// 				h->f.found = FALSE;
-// 				h->offset = 0;
-// 				while (h->f.error == FALSE && n < i_hopt_c_maps && h->f.found == FALSE)
-// 				{
-// 					h->oac = i_hopt_maps[n].argc;
-// 					char** alias = hopt_split(i_hopt_maps[n].names, '=');//FINDER_ALIAS(h, n);
-// 					if (!alias)
-// 					{
-// 						hopt_nerr = HOPT_MALLOCF;
-// 						h->f.error = TRUE;
-// 						break ;
-// 					}
-// 					m = 0;
-// 					while (h->f.error == FALSE && alias[m])
-// 					{
-// 						if (h->f.found == FALSE && h->f.error == FALSE)
-// 						{
-// 							h->f.last_i = i;
-// 							if (h->oac == HOPT_VARIADIC_ARGUMENTS)
-// 							{
-// 								int	variadic_oac = __oac_calcul_variadic_count(h, i, j);
-// 								h->oac = variadic_oac;
-// 							}
-// 							if (h->f.is_short_option == FALSE && is_valide_long_option(&h->av[i][1], alias[m]))
-// 							{
-// 								int	tmp_i = i;
-// 								if (i_hopt_flags[n] == FALSE || itCanBeOverwritable(n))
-// 								{
-// 									tmp_i = FINDER_WRITE(h, i, 1, n);
-// 									if (tmp_i == -1)
-// 										FINDER_ERROR(h, HOPT_CBERROR, i, 1);
-// 									i = (unsigned int)tmp_i;
-// 								}
-// 								if (i_hopt_flags[n] == FALSE)
-// 									++h->n_parsed;
-// 								h->f.found = TRUE;
-// 								j = avi_size;
-// 							}
-// 							else if (h->f.is_short_option == TRUE && h->av[i][j] == alias[m][0])
-// 							{
-// 								if (h->oac > 0 && (h->av[i][j + 1] != '\0' && (h->av[i][j + 1] != '=' && h->oac == 1)))
-// 									FINDER_ERROR(h, HOPT_BADSORDER, i, j);
-// 								if (i_hopt_flags[n] == FALSE || itCanBeRedefOvwr(n))
-// 									if (FINDER_WRITE(h, i, j, n) == -1)
-// 										FINDER_ERROR(h, HOPT_CBERROR, i, j);
-// 								if (i_hopt_flags[n] == FALSE && j == 1)
-// 									++h->n_parsed;
-// 								if (h->av[i][j + 1] == '\0')// || (h->av[i][j + 1] == '=' && h->oac == 1))
-// 									i += h->oac;
-// 								h->f.found = TRUE;
-// 							}
-// 						}
-// 						free(alias[m]);
-// 						++m;
-// 					}
-// 					if (i_hopt_flags[n] == TRUE && h->f.found == TRUE && !itCanBeRedefined(n))
-// 						FINDER_ERROR(h, HOPT_REDEFINED, h->f.last_i, j);
-// 					if (h->f.found == TRUE && h->f.error == FALSE && (i_hopt_flags[n] == FALSE || (itCanBeOverwritable(n) && i_hopt_flags[n] == TRUE)))
-// 					{
-// 						if (hopt_g_disable_sort == FALSE)
-// 							hopt_add_back(&h->f.head, hopt_new_node(h->f.last_i, h->oac));
-// 						i_hopt_flags[n] = TRUE;
-// 					}
-// 					free(alias);
-// 					++n;
-// 				}
-// 				if (h->f.found == FALSE && h->f.error == FALSE && i_hopt_undef_allowed == FALSE)
-// 					FINDER_ERROR(h, HOPT_UNDEFINED, i, j);
-// 				else if (h->f.error == FALSE && h->av[i])
-// 					is_an_option = h->av[i][0] == '-' && strnlen(&h->av[i][0], 2) > 1;
-// 				++j;
-// 			}
-// 		}
-// 		else if (i_hopt_end_on_arg_v == TRUE && hopt_current_state == hopt_c_states)
-// 			break ;
-// 		else if (hopt_current_state <= hopt_c_states)
-// 		{
-// 			// Search the next subcommand
-// 			for (unsigned int cmt = 1 ; cmt <= hopt_c_states ; ++cmt)
-// 			{
-// 				if (!strcmp(h->av[i], hopt_state[cmt]._hopt_cmd_name))
-// 				{
-// 					char*			last_hierarchy = i_hopt_cmd_hierarchy;
-// 					unsigned int	last_state = hopt_current_state;
-
-// 					hopt_current_state = cmt;
-// 					i_hopt_flags = calloc(i_hopt_c_maps, sizeof(BOOL));
-// 					// There is a hierarchy
-// 					if (last_hierarchy && i_hopt_cmd_hierarchy)
-// 					{
-// 						unsigned int	last_hierarchy_size = 0;
-// 						unsigned int	last_cmd_name_size = strlen(i_hopt_cmd_name);
-
-// 						if (last_hierarchy)
-// 							last_hierarchy_size = strlen(last_hierarchy);
-// 						// The parent root hierarchy is the same
-// 						if (!strncmp(last_hierarchy, i_hopt_cmd_hierarchy, last_hierarchy_size))
-// 						{
-// 							// // Check if the next command in current hierarchy is the current command parsed
-// 							unsigned int	current_hierarchy_size = strlen(i_hopt_cmd_hierarchy);
-// 							if (last_hierarchy_size + 1 < current_hierarchy_size &&
-// 								!strncmp(i_hopt_cmd_name, &i_hopt_cmd_hierarchy[last_hierarchy_size + 1], last_cmd_name_size))
-// 							{
-// 								__execute_subcommand_if_exists(last_state);
-// 								break ;
-// 							} // Worst code I wrote in my life
-// 							else
-// 							{
-// 								hopt_current_state = last_state;
-// 								continue ;
-// 							}
-// 						}
-// 						else
-// 						{
-// 							hopt_current_state = last_state;
-// 							continue ;
-// 						}
-// 					}
-// 					else if (!last_hierarchy && i_hopt_cmd_hierarchy && strcmp(i_hopt_cmd_name, i_hopt_cmd_hierarchy))
-// 					{
-// 						hopt_current_state = last_state;
-// 						continue ;
-// 					}
-// 					__execute_subcommand_if_exists(last_state);
-// 					break;
-// 				}
-// 			}
-// 		}
-// 		++i;
-// 	}
-// 	__execute_subcommand_if_exists(hopt_current_state);
-// }
 
 inline
 int

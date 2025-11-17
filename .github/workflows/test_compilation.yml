@@ -1,7 +1,6 @@
 name: Test Compilation on Macos/Linux/Windows
 
 on:
-  push:
   pull_request:
 
 jobs:

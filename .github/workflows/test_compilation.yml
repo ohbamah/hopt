@@ -40,4 +40,4 @@ jobs:
           make
     - name: Build with make
       shell: msys2 {0}
-      run: make re
+      run: cd tests ; make unit

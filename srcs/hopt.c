@@ -57,14 +57,14 @@ hopt(int ac, char** av)
 	hopt_flags = calloc(hopt_c_states + 1, sizeof(BOOL*));
 	hopt_flags[0] = calloc(hopt_state[0]._hopt_c_maps, sizeof(BOOL));
 	hopt_current_state = 0;
-	BETTER_FINDER(&h);
+	hopt_parse_arguments(&h);
 	if (h.f.mandatory_count != hopt_c_mandatory)
 	{
 		__hopt_find_missing_mandatory(&h);
 		hopt_free_lstsort(h.f.head);
 	}
 	else if (h.f.error == FALSE && hopt_g_disable_sort == FALSE)
-		SORT(ac, av, h.f.head);
+		hopt_reorder_arguments(ac, av, h.f.head);
 	else if (hopt_g_disable_sort == FALSE)
 		hopt_free_lstsort(h.f.head);
 	if (hopt_nerr != HOPT_SUCCESS)

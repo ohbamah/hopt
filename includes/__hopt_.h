@@ -193,11 +193,9 @@ char*			basename(const char* hopt_restrict path);
 
 // core.c
 int
-SORT(int ac, /*const*/ char** av, t_hopt_sort* head);
+hopt_reorder_arguments(int ac, /*const*/ char** av, t_hopt_sort* head);
 void
-FINDER(t_hopt* hopt_restrict h);
-void
-BETTER_FINDER(t_hopt* hopt_restrict h);
+hopt_parse_arguments(t_hopt* hopt_restrict h);
 int
 __oac_calcul_variadic_count(t_hopt* hopt_restrict h, BOOL is_the_last);
 void

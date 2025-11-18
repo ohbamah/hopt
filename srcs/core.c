@@ -25,9 +25,9 @@
 #include "__hopt_.h"
 #include "hopt.h"
 
-// re-SORT av tab strings
+// re-hopt_reorder_arguments av tab strings
 int
-SORT(int ac, /*const*/ char** av, t_hopt_sort* head)
+hopt_reorder_arguments(int ac, /*const*/ char** av, t_hopt_sort* head)
 {
 	if (!head)
 		return (0);
@@ -88,7 +88,7 @@ SORT(int ac, /*const*/ char** av, t_hopt_sort* head)
 
 static inline
 void
-ERROR_SYSTEM(t_hopt* hopt_restrict h, int errcode, const char* option, unsigned int len)
+hopt_set_error(t_hopt* hopt_restrict h, int errcode, const char* option, unsigned int len)
 {
 	memset(&hopt_cerr, 0, HOPT_MAX_SSTR_SIZE);
 	h->f.error = TRUE;
@@ -101,7 +101,7 @@ ERROR_SYSTEM(t_hopt* hopt_restrict h, int errcode, const char* option, unsigned 
 
 static inline
 void
-TYPOS(t_hopt* hopt_restrict h, char* arg, unsigned int i, t_hopt_map* current_map)
+hopt_convert_and_store_value(t_hopt* hopt_restrict h, char* arg, unsigned int i, t_hopt_map* current_map)
 {
 	long long	at = 0LL;
 	double		ad = 0.0;
@@ -139,7 +139,7 @@ TYPOS(t_hopt* hopt_restrict h, char* arg, unsigned int i, t_hopt_map* current_ma
 
 static
 void
-ANHIHILATOR(t_hopt* hopt_restrict h, const char* option, unsigned int len)
+hopt_execute_option(t_hopt* hopt_restrict h, const char* option, unsigned int len)
 {
 	unsigned int n = h->f.n;
 
@@ -152,7 +152,7 @@ ANHIHILATOR(t_hopt* hopt_restrict h, const char* option, unsigned int len)
 			char*	value = strchr(option, '=');
 			if (value && ++value)
 			{
-				TYPOS(h, value, 0, &i_hopt_maps[n]);
+				hopt_convert_and_store_value(h, value, 0, &i_hopt_maps[n]);
 				return ;
 			}
 		}
@@ -161,7 +161,7 @@ ANHIHILATOR(t_hopt* hopt_restrict h, const char* option, unsigned int len)
 			++h->f.i; // skip the current option
 			++h->n_parsed;
 			if (!h->av[h->f.i])
-				ERROR_SYSTEM(h, HOPT_MISSOARGC, option, len);
+				hopt_set_error(h, HOPT_MISSOARGC, option, len);
 			if (!h->f.error)
 			{
 				unsigned int i = 0;
@@ -170,12 +170,12 @@ ANHIHILATOR(t_hopt* hopt_restrict h, const char* option, unsigned int len)
 					 h->av[h->f.i] && i < (unsigned int)h->oac ;
 					 ++i)
 				{
-					TYPOS(h, h->av[h->f.i], i, &i_hopt_maps[n]);
+					hopt_convert_and_store_value(h, h->av[h->f.i], i, &i_hopt_maps[n]);
 					++h->f.i;
 					++h->n_parsed;
 				}
 				if (i < (unsigned int)h->oac)
-					ERROR_SYSTEM(h, HOPT_MISSOARGC, option, len);
+					hopt_set_error(h, HOPT_MISSOARGC, option, len);
 			}
 			--h->f.i; // Because `h->f.i` is already skipped in the `for` loop
 			--h->n_parsed;
@@ -186,21 +186,9 @@ ANHIHILATOR(t_hopt* hopt_restrict h, const char* option, unsigned int len)
 	else
 	{
 		if ((i_hopt_maps[n].cb)(h->oac, &h->av[h->f.i], i_hopt_maps[n].cb_arg) == -1)
-			ERROR_SYSTEM(h, HOPT_CBERROR, option, len);
+			hopt_set_error(h, HOPT_CBERROR, option, len);
 	}
 	return ;
-}
-
-static
-BOOL
-is_valide_long_option(const char* av_i, char* alias)
-{
-	char*	_strchr = strchr(av_i, '=');
-	if (!_strchr)
-		return (!strcmp(av_i, alias));
-
-	unsigned int	size = abs((int)(strlen(av_i) - strlen(_strchr)));
-	return (!strncmp(av_i, alias, size) && strlen(alias) == size);
 }
 
 static
@@ -234,10 +222,10 @@ __execute_subcommand_if_exists(unsigned int old_state_index)
 }
 
 void
-SLAVE(t_hopt* hopt_restrict h, const char* option, unsigned int len)
+hopt_add_back_option(t_hopt* hopt_restrict h, const char* option, unsigned int len)
 {
 	if (i_hopt_flags[h->f.n] && !i_hopt_redef_allowed)
-		ERROR_SYSTEM(h, HOPT_REDEFINED, option, len);
+		hopt_set_error(h, HOPT_REDEFINED, option, len);
 	else if ((!i_hopt_flags[h->f.n] || (i_hopt_flags[h->f.n] && i_hopt_redef_overwrt)))
 	{
 		if (!hopt_g_disable_sort)
@@ -247,14 +235,14 @@ SLAVE(t_hopt* hopt_restrict h, const char* option, unsigned int len)
 }
 
 void
-MASTER(t_hopt* hopt_restrict h)
+hopt_add_back_subcommand(t_hopt* hopt_restrict h)
 {
 	if (!hopt_g_disable_sort)
 		hopt_add_back(&h->f.head, hopt_new_node(h->f.i, h->oac));
 }
 
 void
-EXECUTOR(t_hopt* hopt_restrict h, const char* option, unsigned int len)
+hopt_process_option(t_hopt* hopt_restrict h, const char* option, unsigned int len)
 {
 	char**	aliases;
 	char*	alias;
@@ -293,9 +281,9 @@ EXECUTOR(t_hopt* hopt_restrict h, const char* option, unsigned int len)
 				if (!i_hopt_flags[h->f.n] || (i_hopt_redef_allowed && i_hopt_redef_overwrt))
 				{
 					if (h->oac > 0 && h->f.is_short_option && !is_the_last)
-						ERROR_SYSTEM(h, HOPT_BADSORDER, option, len);
+						hopt_set_error(h, HOPT_BADSORDER, option, len);
 					else
-						ANHIHILATOR(h, option, len);
+						hopt_execute_option(h, option, len);
 				}
 				else if (i_hopt_redef_allowed)
 				{
@@ -314,12 +302,12 @@ EXECUTOR(t_hopt* hopt_restrict h, const char* option, unsigned int len)
 		free(aliases);
 
 		if (!h->f.error && h->f.found)
-			SLAVE(h, option, len);
+			hopt_add_back_option(h, option, len);
 	}
 }
 
 BOOL
-SEVEN_COMMANDS(const char* argument, unsigned int size)
+hopt_find_subcommand(const char* argument)
 {
 	// Search the next subcommand
 	for (unsigned int cmt = 1 ; cmt <= hopt_c_states ; ++cmt)
@@ -375,7 +363,7 @@ SEVEN_COMMANDS(const char* argument, unsigned int size)
 }
 
 void
-BETTER_FINDER(t_hopt* hopt_restrict h)
+hopt_parse_arguments(t_hopt* hopt_restrict h)
 {
 	int			size;
 	BOOL		is_an_option;
@@ -399,9 +387,9 @@ BETTER_FINDER(t_hopt* hopt_restrict h)
 			if (!h->f.is_short_option)
 			{
 				size = strlen(&argument[1]);
-				EXECUTOR(h, &argument[1], size);
+				hopt_process_option(h, &argument[1], size);
 				if (!h->f.error && !h->f.found && !i_hopt_undef_allowed)
-					ERROR_SYSTEM(h, HOPT_UNDEFINED, &argument[1], size);
+					hopt_set_error(h, HOPT_UNDEFINED, &argument[1], size);
 			}
 			else
 			{
@@ -413,9 +401,9 @@ BETTER_FINDER(t_hopt* hopt_restrict h)
 					else
 						size = 1;
 					
-					EXECUTOR(h, &argument[l], size);
+					hopt_process_option(h, &argument[l], size);
 					if (!h->f.error && !h->f.found && !i_hopt_undef_allowed)
-						ERROR_SYSTEM(h, HOPT_UNDEFINED, &argument[l], size);
+						hopt_set_error(h, HOPT_UNDEFINED, &argument[l], size);
 					
 					if (size > 1)
 						break ;
@@ -425,13 +413,13 @@ BETTER_FINDER(t_hopt* hopt_restrict h)
 				++h->n_parsed;
 		}
 		else if (hopt_current_state <= hopt_c_states)
-			is_subcmd = SEVEN_COMMANDS(argument, strlen(argument));
+			is_subcmd = hopt_find_subcommand(argument);
 
 		if (!is_an_option && !is_subcmd && i_hopt_end_on_arg_v)
 			break ;
 		else if (is_subcmd)
 		{
-			MASTER(h);
+			hopt_add_back_subcommand(h);
 			++h->n_parsed;
 		}
 	}

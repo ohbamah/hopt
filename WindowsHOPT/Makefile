@@ -78,7 +78,7 @@ $(NAME): $(OBJS)
 
 $(OBJS_DIR)/%.obj: %.c
 	@if not exist "$(dir $@)" mkdir "$(dir $@)"
-	@echo "🗸 Compilation $<"
+	@echo "Compilation $<"
 	$(CC) $(INCLUDES) $(CFLAGS) -c $< -o $@
 
 clean:

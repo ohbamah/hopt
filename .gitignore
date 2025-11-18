@@ -3,4 +3,4 @@ libhopt.a
 a.out
 tests/hopt_tests.dSYM/
 .DS_STORE
-
+tests/unit_tests

@@ -78,7 +78,7 @@ $(NAME): $(OBJS)
 
 $(OBJS_DIR)/%.obj: %.c
 	@mkdir -p $(@D)
-	@echo "$(GREEN)🗸 Compilation $(BOLD)$(YELLOW)$<$(CLASSIC)"
+	@echo "$(GREEN)Compilation $(BOLD)$(YELLOW)$<$(CLASSIC)"
 	$(CC) $(INCLUDES) $(CFLAGS) -c $< -o $@
 
 clean:

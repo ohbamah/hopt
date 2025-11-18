@@ -30,9 +30,9 @@ YELLOW 	= \e[38;2;250;189;0m
 #*   VARIABLES   *#
 # ############### #
 
-NAME = hopt_tests
+NAME = hopt_unit_tester
 
-CC = @cc
+CC = @clang++
 
 LMAKE = @make --no-print-directory -C
 
@@ -43,13 +43,15 @@ LMAKE = @make --no-print-directory -C
 all: compile
 
 compile:
-	$(CC) -g3 main_test.c -L.. -lhopt -o $(NAME)
+	$(CC) -g3 -fPIE unit_tester.cpp -Wno-unused-value -L.. -lhopt -o $(NAME)
 
-set:
-	@bash setter.sh
+# Tests unitaires avec votre système
+unit:
+	make -C ..
+	@echo -e "$(YELLOW)$(BOLD)Compilation des tests unitaires...$(CLASSIC)"
+	@clang++ -fPIE unit_tester.cpp -Wno-unused-value -Wno-writable-strings -L.. -lhopt -o unit_tests
+	@echo -e "$(YELLOW)$(BOLD)Exécution des tests unitaires...$(CLASSIC)"
+	@./unit_tests
+	@rm -f unit_tests
 
-test:
-	$(CC) -g3 main_test.c -L.. -lhopt -o $(NAME)
-	@bash tester.sh
-
-.PHONY: test
+.PHONY: test unit

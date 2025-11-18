@@ -1030,7 +1030,7 @@ int main(void)
             hopt_add_option((char*)"f", 0, 0, &bool_mock_first, NULL);
             hopt_subcmd((char*)"cmd", void_subcommand, NULL, NULL)
             {
-                hopt_add_option((char*)"p", 1, 0, &bool_mock_second, NULL);
+                hopt_add_option((char*)"p", 0, 0, &bool_mock_second, NULL);
             }
             result = hopt(size, args);
 

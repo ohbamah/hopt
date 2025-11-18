@@ -421,7 +421,8 @@ BETTER_FINDER(t_hopt* hopt_restrict h)
 						break ;
 				}
 			}
-			++h->n_parsed;
+			if (h->f.found)
+				++h->n_parsed;
 		}
 		else if (hopt_current_state <= hopt_c_states)
 			is_subcmd = SEVEN_COMMANDS(argument, strlen(argument));

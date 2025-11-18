@@ -39,6 +39,13 @@ subcommand(void* arg)
     return ptr;
 }
 
+void*
+void_subcommand(void* arg)
+{
+    (void)arg;
+    return (NULL);
+}
+
 int main(void)
 {
     printf("🚀 HOPT Unit Tests\n");
@@ -403,6 +410,30 @@ int main(void)
                 EXPECTS_STR_EQ(hopt_strerror(), "hopt: option -x is undefined.");
             }
         }
+
+        CONTEXT("with hopt_allow_undef()")
+        {
+            IT("should work")
+            {
+                hopt_free();
+                hopt_reset();
+
+                char* args[] = CREATE_ARGS("Tung Tung Tung Sahur", "-f", "-s");
+                size = ARGS_SIZE(args);
+
+                hopt_allow_undef();
+                hopt_add_option((char*)"f", 0, 0, mock, NULL);
+                result = hopt(size, args);
+
+                DEBUG(result)
+                EXPECTS(result == 1);
+                EXPECTS_STR_EQ(args[0], "./prog");
+                EXPECTS_STR_EQ(args[1], "-f");
+                EXPECTS_STR_EQ(args[2], "Tung Tung Tung Sahur");
+                EXPECTS_STR_EQ(args[3], "-s");
+                EXPECTS(args[4] == NULL);
+            }
+        }
     }
 
     // REDEFINED OPTIONS
@@ -502,6 +533,8 @@ int main(void)
             }
         }
     }
+
+
 
     // AV sorted
     TESTS("AV sorted")
@@ -909,6 +942,101 @@ int main(void)
                 EXPECTS_STR_EQ(args[7], "allo");
                 EXPECTS_STR_EQ(args[8], "miam");
             }
+        }
+    }
+
+    TESTS("end_on_arg()")
+    {
+        char    bool_mock_first;
+        char    bool_mock_second;
+
+        CONTEXT("with an argument as last arugment")
+        {
+            hopt_free();
+            hopt_reset();
+            bool_mock_first = 0;
+            bool_mock_second = 0;
+
+            char* arg_test = "abcd";
+
+            char* args[] = CREATE_ARGS("-f", "-p", "tre");
+            size = ARGS_SIZE(args);
+
+            hopt_end_on_arg();
+            hopt_add_option((char*)"f", 0, 0, &bool_mock_first, NULL);
+            hopt_add_option((char*)"p", 0, 0, &bool_mock_second, NULL);
+            result = hopt(size, args);
+
+            EXPECTS(result == 2);
+            EXPECTS(bool_mock_first == 1);
+            EXPECTS(bool_mock_second == 1);
+        }
+
+        CONTEXT("with an argument between two options")
+        {
+            hopt_free();
+            hopt_reset();
+            bool_mock_first = 0;
+            bool_mock_second = 0;
+
+            char* arg_test = "abcd";
+
+            char* args[] = CREATE_ARGS("-f", "tre", "-p");
+            size = ARGS_SIZE(args);
+
+            hopt_end_on_arg();
+            hopt_add_option((char*)"f", 0, 0, &bool_mock_first, NULL);
+            hopt_add_option((char*)"p", 0, 0, &bool_mock_second, NULL);
+            result = hopt(size, args);
+
+            EXPECTS(result == 1);
+            EXPECTS(bool_mock_first == 1);
+            EXPECTS(bool_mock_second == 0);
+        }
+
+        CONTEXT("with an option argument before a boolean option")
+        {
+            hopt_free();
+            hopt_reset();
+            bool_mock_first = 0;
+            char*   opt_arg = NULL;
+
+            char* arg_test = "abcd";
+
+            char* args[] = CREATE_ARGS("-p", "option argument", "-f");
+            size = ARGS_SIZE(args);
+
+            hopt_end_on_arg();
+            hopt_add_option((char*)"f", 0, 0, &bool_mock_first, NULL);
+            hopt_add_option((char*)"p", 1, 0, &opt_arg, NULL);
+            result = hopt(size, args);
+
+            EXPECTS(result == 3);
+            EXPECTS(bool_mock_first == 1);
+            EXPECTS_STR_EQ(opt_arg, "option argument");
+        }
+
+        CONTEXT("with a subcommand before an option")
+        {
+            hopt_free();
+            hopt_reset();
+            bool_mock_first = 0;
+            bool_mock_second = 0;
+
+            char* args[] = CREATE_ARGS("-f", "cmd", "-p");
+            size = ARGS_SIZE(args);
+
+            hopt_end_on_arg();
+            hopt_add_option((char*)"f", 0, 0, &bool_mock_first, NULL);
+            hopt_subcmd((char*)"cmd", void_subcommand, NULL, NULL)
+            {
+                hopt_add_option((char*)"p", 1, 0, &bool_mock_second, NULL);
+            }
+            result = hopt(size, args);
+
+            EXPECTS(result == 3);
+            EXPECTS(bool_mock_first == 1);
+            EXPECTS(bool_mock_second == 1);
         }
     }
     

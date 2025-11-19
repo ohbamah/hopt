@@ -4,3 +4,4 @@ a.out
 .DS_STORE
 tests/hopt_unit_tester
 tests/hopt_unit_tester.dSYM/
+.vscode/

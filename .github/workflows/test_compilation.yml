@@ -1,4 +1,4 @@
-name: Test Compilation on Macos/Linux/Windows
+name: Hopt / CI
 
 on:
   pull_request:
@@ -28,7 +28,7 @@ jobs:
     runs-on: windows-latest
     steps:
     - name: checkout
-      uses: actions/checkout@v4
+      uses: actions/checkout@v5
     - name: Setup MSYS2 (for make and clang)
       uses: msys2/setup-msys2@v2
       with:

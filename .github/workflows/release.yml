@@ -22,7 +22,7 @@ jobs:
       id: get_version
       run: |
         VERSION="v${{ env.VERSION }}"
-        echo "$VERSION" >> $GITHUB_OUTPUT
+        echo "VERSION=$VERSION" >> $GITHUB_OUTPUT
 
     - name: Create tag
       run: |

@@ -4,22 +4,28 @@
 
 ## Installation (limited)
 
-### Linux/MacOS
+### Linux
 
 ```bash
-  wget https://github.com/ohbamah/hopt/releases/download/LatestLinux/libhopt.zip
+  wget https://github.com/ohbamah/hopt/releases/latest/download/libhopt-linux-x64.tar.gz
+```
+
+### Macos
+
+```bash
+  wget https://github.com/ohbamah/hopt/releases/latest/download/libhopt-macos-x64.tar.gz
 ```
 
 ### Windows 10/11
 
 ```bash
-  curl -O https://github.com/ohbamah/hopt/releases/download/LatestWindows/libhopt.zip
+  curl -O https://github.com/ohbamah/hopt/releases/latest/download/libhopt-windows-x64.zip
 ```
 
 or
 
 ```bash
-  Invoke-WebRequest https://github.com/ohbamah/hopt/releases/download/LatestWindows/libhopt.zip -OutFile libhopt.zip
+  Invoke-WebRequest https://github.com/ohbamah/hopt/releases/latest/download/libhopt-windows-x64.zip -OutFile libhopt.zip
 ```
 
 ## FAQ

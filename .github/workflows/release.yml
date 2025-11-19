@@ -1,0 +1,155 @@
+name: Create Release
+
+env:
+  VERSION: 2.0.0
+
+on:
+  push:
+    branches:
+      - main
+
+jobs:
+  create-release:
+    runs-on: ubuntu-latest
+    outputs:
+      release_id: ${{ steps.create_release.outputs.id }}
+      upload_url: ${{ steps.create_release.outputs.upload_url }}
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+
+    - name: Set version from env
+      id: get_version
+      run: |
+        VERSION="v${{ env.VERSION }}"
+        echo "$VERSION" >> $GITHUB_OUTPUT
+
+    - name: Create tag
+      run: |
+        git config --local user.email "action@github.com"
+        git config --local user.name "GitHub Action"
+        if git tag -l | grep -q "^${{ steps.get_version.outputs.VERSION }}$"; then
+        else
+          git tag ${{ steps.get_version.outputs.VERSION }}
+          git push origin ${{ steps.get_version.outputs.VERSION }}
+        fi
+
+    - name: Create Release
+      id: create_release
+      uses: actions/create-release@v1
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      with:
+        tag_name: ${{ steps.get_version.outputs.VERSION }}
+        release_name: Hopt ${{ steps.get_version.outputs.VERSION }}
+        body: |
+          ## 🚀 Release ${{ steps.get_version.outputs.VERSION }}
+          
+          **Commit:** ${{ github.sha }}
+          **Date:** ${{ github.event.head_commit.timestamp }}
+          **Author:** ${{ github.event.head_commit.author.name }}
+
+          ### 📝 Last changes
+          ${{ github.event.head_commit.message }}
+        draft: false
+        prerelease: false
+
+  build-artifacts:
+    needs: create-release
+    strategy:
+      matrix:
+        include:
+          - os: ubuntu-latest
+            platform: linux-x64
+            archive_name: libhopt-linux-x64.tar.gz
+          - os: macos-latest
+            platform: macos-x64
+            archive_name: libhopt-macos-x64.tar.gz
+          - os: windows-latest
+            platform: windows-x64
+            archive_name: libhopt-windows-x64.zip
+
+    runs-on: ${{ matrix.os }}
+
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v5
+
+    - name: Setup MSYS2 (Windows)
+      if: matrix.os == 'windows-latest'
+      uses: msys2/setup-msys2@v2
+      with:
+        msystem: MINGW64
+        update: true
+        install: >-
+          mingw-w64-x86_64-clang
+          mingw-w64-x86_64-make
+          make
+          tar
+    - name: Build library (Windows)
+      if: matrix.os == 'windows-latest'
+      shell: msys2 {0}
+      run: |
+        make
+    - name: Prepare release package (Windows)
+      if: matrix.os == 'windows-latest'
+      shell: msys2 {0}
+      run: |
+        mkdir -p release-package/hopt
+        mv libhopt.a release-package/hopt/libhopt.lib
+        mv includes/hopt.h release-package/hopt/
+        mv LICENSE release-package/hopt/
+        mv README.md release-package/hopt/
+        echo "# HOPT ${{ github.ref_name }} - ${{ matrix.platform }} - ${{ env.VERSION }}" > release-package/hopt/VERSION.txt
+        echo "Compiled on: $(date)" >> release-package/hopt/VERSION.txt
+        echo "Plateform: ${{ matrix.platform }}" >> release-package/hopt/VERSION.txt
+        cd release-package
+        zip -r ../${{ matrix.archive_name }} hopt/
+
+    - name: Install dependencies (Linux)
+      if: matrix.os == 'ubuntu-latest'
+      run: |
+        sudo apt-get update
+        sudo apt-get install -y clang make
+    - name: Build library (Unix)
+      if: matrix.os != 'windows-latest'
+      run: |
+        make
+    - name: Prepare release package (Unix)
+      if: matrix.os != 'windows-latest'
+      run: |
+        mkdir -p release-package/hopt
+        mv libhopt.a release-package/hopt/
+        mv includes/hopt.h release-package/hopt/
+        mv LICENSE release-package/hopt/
+        mv README.md release-package/hopt/
+        echo "# HOPT ${{ github.ref_name }} - ${{ matrix.platform }}" > release-package/hopt/VERSION.txt
+        echo "Compiled on: $(date)" >> release-package/hopt/VERSION.txt
+        echo "Plateform: ${{ matrix.platform }}" >> release-package/hopt/VERSION.txt
+        cd release-package
+        tar -czf ../${{ matrix.archive_name }} hopt/
+
+    - name: Upload Release Asset
+      uses: actions/upload-release-asset@v1
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      with:
+        upload_url: ${{ needs.create-release.outputs.upload_url }}
+        asset_path: ./${{ matrix.archive_name }}
+        asset_name: ${{ matrix.archive_name }}
+        asset_content_type: application/octet-stream
+
+  update-latest:
+    needs: [create-release, build-artifacts]
+    runs-on: ubuntu-latest
+    steps:
+    - name: Update latest release
+      uses: actions/github-script@v8
+      with:
+        script: |
+          await github.rest.repos.updateRelease({
+            owner: context.repo.owner,
+            repo: context.repo.repo,
+            release_id: ${{ needs.create-release.outputs.release_id }},
+            make_latest: true
+          });

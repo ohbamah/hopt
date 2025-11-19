@@ -23,7 +23,7 @@
 */
 
 #ifndef HOPT_H
-#define HOPT_H 1
+#define HOPT_H 2
 
 	/**********************/
 	/*                    */
@@ -31,7 +31,7 @@
 	/*                    */
 	/**********************/
 
-# define HOPT_VERSION	121
+# define HOPT_VERSION	200
 
 # ifndef HOPT_MAX_SSTR_SIZE
 #  define HOPT_MAX_SSTR_SIZE	31

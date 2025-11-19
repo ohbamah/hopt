@@ -12,8 +12,8 @@ jobs:
   create-release:
     runs-on: ubuntu-latest
     outputs:
+      tag_name: ${{ steps.get_version.outputs.VERSION }}
       release_id: ${{ steps.create_release.outputs.id }}
-      upload_url: ${{ steps.create_release.outputs.upload_url }}
     steps:
     - name: Checkout code
       uses: actions/checkout@v4
@@ -33,12 +33,10 @@ jobs:
 
     - name: Create Release
       id: create_release
-      uses: actions/create-release@v1
-      env:
-        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      uses: softprops/action-gh-release@v2
       with:
         tag_name: ${{ steps.get_version.outputs.VERSION }}
-        release_name: Hopt ${{ steps.get_version.outputs.VERSION }}
+        name: Hopt ${{ steps.get_version.outputs.VERSION }}
         body: |
           ## 🚀 Release ${{ steps.get_version.outputs.VERSION }}
           
@@ -50,6 +48,8 @@ jobs:
           ${{ github.event.head_commit.message }}
         draft: false
         prerelease: false
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
   build-artifacts:
     needs: create-release
@@ -127,14 +127,12 @@ jobs:
         tar -czf ../${{ matrix.archive_name }} hopt/
 
     - name: Upload Release Asset
-      uses: actions/upload-release-asset@v1
+      uses: softprops/action-gh-release@v2
+      with:
+        tag_name: ${{ needs.create-release.outputs.tag_name }}
+        files: ./${{ matrix.archive_name }}
       env:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-      with:
-        upload_url: ${{ needs.create-release.outputs.upload_url }}
-        asset_path: ./${{ matrix.archive_name }}
-        asset_name: ${{ matrix.archive_name }}
-        asset_content_type: application/octet-stream
 
   update-latest:
     needs: [create-release, build-artifacts]

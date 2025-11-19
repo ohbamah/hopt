@@ -28,11 +28,8 @@ jobs:
       run: |
         git config --local user.email "action@github.com"
         git config --local user.name "GitHub Action"
-        if git tag -l | grep -q "^${{ steps.get_version.outputs.VERSION }}$"; then
-        else
-          git tag ${{ steps.get_version.outputs.VERSION }}
-          git push origin ${{ steps.get_version.outputs.VERSION }}
-        fi
+        git tag ${{ steps.get_version.outputs.VERSION }} || echo "Tag already exists"
+        git push origin ${{ steps.get_version.outputs.VERSION }} || echo "Tag already pushed"
 
     - name: Create Release
       id: create_release

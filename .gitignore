@@ -1,6 +1,6 @@
 libhopt.a
 .objs/
 a.out
-tests/hopt_tests.dSYM/
 .DS_STORE
-tests/unit_tests
+tests/hopt_unit_tester
+tests/hopt_unit_tester.dSYM/

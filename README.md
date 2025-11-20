@@ -113,9 +113,12 @@ int main(int ac, char** av)
 }
 ```
 
+## Edge cases:
+
+- If an option with variadic arguments if followed by a subcommand, the subcommand will be interpreted as an argument for the option.
+
 ## Todo:
 
-- Check wether the option argument is the right type to generate the appropriate error.
 - Handle type wrapper like IPv4, IPv6, numeric range, file, ...
 
 ## Authors

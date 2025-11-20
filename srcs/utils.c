@@ -52,7 +52,7 @@ hopt_strjoin(const char* hopt_restrict s1, const char* hopt_restrict s2)
 
 	if (!s1)
 		return (strdup(s2));
-	ret = malloc((size + 1) * sizeof(char*));
+	ret = malloc((size + 1) * sizeof(char));
 	if (!ret)
 		return (NULL);
 	for (int i = 0 ; s1[i] ; ++i)
@@ -73,7 +73,7 @@ hopt_strfjoin(char* hopt_restrict s1, const char* hopt_restrict s2)
 
 	if (!s1)
 		return (strdup(s2));
-	ret = malloc((size + 1) * sizeof(char*));
+	ret = malloc((size + 1) * sizeof(char));
 	if (!ret)
 		return (NULL);
 	for (int i = 0 ; s1[i] ; ++i)

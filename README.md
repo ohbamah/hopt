@@ -119,7 +119,15 @@ int main(int ac, char** av)
 
 ## Todo:
 
-- Handle type wrapper like IPv4, IPv6, numeric range, file, ...
+- `hopt_reset_options()` to reset all added options and `hopt_reset_config()` to reset config set, so `hopt_reset()` will reset both.
+- Flag to mutally exclude options each others
+
+- **Type validation**: Add strict type validation in `hopt_convert_and_store_value()` to ensure argument types match expected formats (numeric, string, etc.) if `hopt_ensure_type_validation()` was called.
+- **Custom type validators**: Implement type wrappers for common formats (IPv4, IPv6, numeric ranges, file paths, etc.).
+- **Performance optimization**: Store in cache parsed option aliases to avoid repeated splitting of `maps.names` during argument parsing.
+- **Memory safety**: Add proper error handling for `malloc()` and `realloc()` failures to prevent memory leaks and segmentation fault.
+- **Selective reset functions**: Implement `hopt_reset_options()` to reset all added options and `hopt_reset_config()` to reset configuration settings, allowing `hopt_reset()` to reset both.
+- **Mutually exclusive options**: Add support for flag groups that mutually exclude each other (e.g., `--verbose` and `--quiet` cannot be used together).
 
 ## Authors
 

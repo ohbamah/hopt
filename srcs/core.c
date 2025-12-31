@@ -224,9 +224,9 @@ __execute_subcommand_if_exists(unsigned int old_state_index)
 void
 hopt_add_back_option(t_hopt* hopt_restrict h, const char* option, unsigned int len)
 {
-	if (i_hopt_flags[h->f.n] && !i_hopt_redef_allowed)
+	if (i_hopt_flags[h->f.n] && !itCanBeRedefined(h->f.n))
 		hopt_set_error(h, HOPT_REDEFINED, option, len);
-	else if ((!i_hopt_flags[h->f.n] || (i_hopt_flags[h->f.n] && i_hopt_redef_overwrt)))
+	else if ((!i_hopt_flags[h->f.n] || (i_hopt_flags[h->f.n] && itCanBeOverwritable(h->f.n))))
 	{
 		if (!hopt_g_disable_sort)
 			hopt_add_back(&h->f.head, hopt_new_node(h->f.last_i, h->oac));
@@ -278,7 +278,7 @@ hopt_process_option(t_hopt* hopt_restrict h, const char* option, unsigned int le
 				if (h->oac == HOPT_VARIADIC_ARGUMENTS)
 					h->oac = __oac_calcul_variadic_count(h, is_the_last);
 
-				if (!i_hopt_flags[h->f.n] || (i_hopt_redef_allowed && i_hopt_redef_overwrt))
+				if (!i_hopt_flags[h->f.n] || (itCanBeOverwritable(h->f.n)))
 				{
 					if (h->oac > 0 && h->f.is_short_option && !is_the_last)
 						hopt_set_error(h, HOPT_BADSORDER, option, len);

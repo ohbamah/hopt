@@ -35,7 +35,7 @@ inline
 int
 itCanBeOverwritable(int n)
 {
-	return (i_hopt_redef_overwrt == TRUE || (i_hopt_maps[n].flag & HOPT_FLFLOW));
+	return ((i_hopt_redef_allowed == TRUE || i_hopt_redef_overwrt == TRUE) || (i_hopt_maps[n].flag & HOPT_FLFLOW));
 }
 
 inline

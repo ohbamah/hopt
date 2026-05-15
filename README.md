@@ -45,25 +45,25 @@ The library follows the POSIX standard, so in theory it will be compatible with 
 
 With HOPT, you can customize everything while keeping extreme control over option management.
 
-| Features                        | HOPT     | ARGP     | GETOPT |
+| Features                        | HOPT     | ARGP      | GETOPT |
 | :------------------------------ | :------- | :-------- | :----- |
-| Parse program options           | ​✅       | ✅       | ✅     |
-| Parse option arguments          | ​✅       | ✅       | ✅     |
-| Sort argument values            | ​✅       | ❌       | ❌     |
-| Easy and readable usage         | ​✅       | 〰️       | ​✅     |
-| Simple optional features        | ​✅       | ❌       | ❌     |
-| Advanced logic support          | ​✅       | ​✅       | ❌     |
-| Returns error codes             | ​✅       | ​✅       | ​✅     |
-| Supports short and long options | ​✅       | ​✅       | ​✅     |
-| Supports callbacks              | ​✅       | ​✅       | ❌     |
-| Custom help menu setup          | ​✅       | 〰️       | ❌     |
-| Auto-generated help menu        | ​✅       | ​✅       | ❌     |
-| Manages sub-command options     | ​✅       | ​〰️       | ❌     |
-| Manages embedded sub-commands   | ​✅       | ​❌       | ❌     |
-| Automatic error handling        | 〰️       | ​✅       | 〰️     |
-| POSIX (OS compatibilities)      | ✅       | ​❌       | ✅     |
-| Language translation            | ❌       | ​✅       | ❌     |
-| Variadic option arguments       | ✅       | ​✅       | ❌     |
+| Parse program options           | ​✅       | ✅        | ✅      |
+| Parse option arguments          | ​✅       | ✅        | ✅      |
+| Sort argument values            | ​✅       | ❌        | ❌      |
+| Easy and readable usage         | ​✅       | 〰️        | ​✅      |
+| Simple optional features        | ​✅       | ❌        | ❌      |
+| Advanced logic support          | ​✅       | ​✅        | ❌      |
+| Returns error codes             | ​✅       | ​✅        | ​✅      |
+| Supports short and long options | ​✅       | ​✅        | ​✅      |
+| Supports callbacks              | ​✅       | ​✅        | ❌      |
+| Custom help menu setup          | ​✅       | 〰️        | ❌      |
+| Auto-generated help menu        | ​✅       | ​✅        | ❌      |
+| Manages sub-command options     | ​✅       | ​〰️        | ❌      |
+| Manages embedded sub-commands   | ​✅       | ​❌        | ❌      |
+| Automatic error handling        | 〰️       | ​✅        | 〰️      |
+| POSIX (OS compatibilities)      | ✅       | ​❌        | ✅      |
+| Language translation            | ❌       | ​✅        | ❌      |
+| Variadic option arguments       | ✅       | ​✅        | ❌      |
 
 
 ## Usage/Examples
@@ -115,7 +115,7 @@ int main(int ac, char** av)
 
 ## Edge cases:
 
-- If an option with variadic arguments if followed by a subcommand, the subcommand will be interpreted as an argument for the option.
+- If an option with variadic arguments is followed by a subcommand, the subcommand will be interpreted as an argument for the option.
 
 ## Todo:
 

@@ -478,7 +478,7 @@ __check_any_hierarchy_coherence(char** splitted_hierarchy, unsigned int index)
 void
 __hopt_find_missing_mandatory(t_hopt* hopt_restrict h)
 {
-	int				f = FALSE;
+	int				f = (h->f.mandatory_count == 0) ? TRUE : FALSE;
 	char**			s;
 	unsigned int	size;
 

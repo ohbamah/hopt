@@ -1125,6 +1125,43 @@ int main(void)
             }
         }
 
+        CONTEXT("when no options at all are provided on cmdline")
+        {
+            IT("should still fail with HOPT_MISSOPT (regression)")
+            {
+                hopt_free();
+                hopt_reset();
+
+                int int_mock_local = -1;
+
+                char* args[] = { (char*)"./prog", NULL };
+                size = 1;
+
+                hopt_add_option((char*)"m", 1, HOPT_TYPE_INT | HOPT_FLMA, &int_mock_local, NULL);
+                result = hopt(size, args);
+
+                EXPECTS(result == -1);
+                EXPECTS(hopt_nerr == HOPT_MISSOPT);
+            }
+
+            IT("should also fail with non-option args only")
+            {
+                hopt_free();
+                hopt_reset();
+
+                int int_mock_local = -1;
+
+                char* args[] = CREATE_ARGS("file1", "file2");
+                size = ARGS_SIZE(args);
+
+                hopt_add_option((char*)"m", 1, HOPT_TYPE_INT | HOPT_FLMA, &int_mock_local, NULL);
+                result = hopt(size, args);
+
+                EXPECTS(result == -1);
+                EXPECTS(hopt_nerr == HOPT_MISSOPT);
+            }
+        }
+
         CONTEXT("with multiple mandatory options")
         {
             IT("should fail when one is missing")

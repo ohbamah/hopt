@@ -70,6 +70,21 @@ void_subcommand(void* arg)
     return (NULL);
 }
 
+static int   g_cb_calls         = 0;
+static int   g_cb_last_argc     = -1;
+static void* g_cb_last_arg      = (void*)-1;
+static int   g_cb_return_value  = 0;
+
+int
+test_callback(int ac, char** av, void* arg)
+{
+    (void)av;
+    g_cb_calls    += 1;
+    g_cb_last_argc = ac;
+    g_cb_last_arg  = arg;
+    return (g_cb_return_value);
+}
+
 int main(void)
 {
     printf("🚀 HOPT Unit Tests\n");
@@ -1064,8 +1079,310 @@ int main(void)
         }
     }
     
+    // HOPT_FLMA
+    TESTS("HOPT_FLMA (mandatory)")
+    {
+        CONTEXT("when mandatory option is present")
+        {
+            IT("should succeed and store the value")
+            {
+                hopt_free();
+                hopt_reset();
+
+                int int_mock_local = -1;
+
+                char* args[] = CREATE_ARGS("-m", "42");
+                size = ARGS_SIZE(args);
+
+                hopt_add_option((char*)"m", 1, HOPT_TYPE_INT | HOPT_FLMA, &int_mock_local, NULL);
+                result = hopt(size, args);
+
+                EXPECTS(result == 2);
+                EXPECTS(hopt_nerr == HOPT_SUCCESS);
+                EXPECTS(int_mock_local == 42);
+            }
+        }
+
+        CONTEXT("when mandatory option is missing (with other options on cmdline)")
+        {
+            IT("should fail with HOPT_MISSOPT")
+            {
+                hopt_free();
+                hopt_reset();
+
+                int int_mock_local = -1;
+                bool flag_mock     = false;
+
+                char* args[] = CREATE_ARGS("-f");
+                size = ARGS_SIZE(args);
+
+                hopt_add_option((char*)"f", 0, 0, &flag_mock, NULL);
+                hopt_add_option((char*)"m", 1, HOPT_TYPE_INT | HOPT_FLMA, &int_mock_local, NULL);
+                result = hopt(size, args);
+
+                EXPECTS(result == -1);
+                EXPECTS(hopt_nerr == HOPT_MISSOPT);
+            }
+        }
+
+        CONTEXT("with multiple mandatory options")
+        {
+            IT("should fail when one is missing")
+            {
+                hopt_free();
+                hopt_reset();
+
+                int a_local = 0;
+                int b_local = 0;
+
+                char* args[] = CREATE_ARGS("-a", "1");
+                size = ARGS_SIZE(args);
+
+                hopt_add_option((char*)"a", 1, HOPT_TYPE_INT | HOPT_FLMA, &a_local, NULL);
+                hopt_add_option((char*)"b", 1, HOPT_TYPE_INT | HOPT_FLMA, &b_local, NULL);
+                result = hopt(size, args);
+
+                EXPECTS(result == -1);
+                EXPECTS(hopt_nerr == HOPT_MISSOPT);
+            }
+
+            IT("should succeed when all are provided")
+            {
+                hopt_free();
+                hopt_reset();
+
+                int a_local = 0;
+                int b_local = 0;
+
+                char* args[] = CREATE_ARGS("-a", "1", "-b", "2");
+                size = ARGS_SIZE(args);
+
+                hopt_add_option((char*)"a", 1, HOPT_TYPE_INT | HOPT_FLMA, &a_local, NULL);
+                hopt_add_option((char*)"b", 1, HOPT_TYPE_INT | HOPT_FLMA, &b_local, NULL);
+                result = hopt(size, args);
+
+                EXPECTS(result == 4);
+                EXPECTS(hopt_nerr == HOPT_SUCCESS);
+                EXPECTS(a_local == 1);
+                EXPECTS(b_local == 2);
+            }
+        }
+
+        CONTEXT("regression: TYPE | FLMA")
+        {
+            IT("should still convert and store the value (not silently skipped)")
+            {
+                hopt_free();
+                hopt_reset();
+
+                int       int_local    = -999;
+                short     short_local  = -1;
+                double    double_local = -1.0;
+                char*     str_local    = NULL;
+
+                char* args[] = CREATE_ARGS("-i", "77", "-s", "33", "-d", "3.5", "-S", "hello");
+                size = ARGS_SIZE(args);
+
+                hopt_add_option((char*)"i", 1, HOPT_TYPE_INT    | HOPT_FLMA, &int_local,    NULL);
+                hopt_add_option((char*)"s", 1, HOPT_TYPE_SHORT  | HOPT_FLMA, &short_local,  NULL);
+                hopt_add_option((char*)"d", 1, HOPT_TYPE_DOUBLE | HOPT_FLMA, &double_local, NULL);
+                hopt_add_option((char*)"S", 1, HOPT_TYPE_STR    | HOPT_FLMA, &str_local,    NULL);
+                result = hopt(size, args);
+
+                EXPECTS(result == 8);
+                EXPECTS(hopt_nerr == HOPT_SUCCESS);
+                EXPECTS(int_local == 77);
+                EXPECTS(short_local == 33);
+                EXPECTS(double_local == 3.5);
+                EXPECTS_STR_EQ(str_local, "hello");
+            }
+        }
+    }
+
+    // HOPT_FLSEQ
+    TESTS("HOPT_FLSEQ (allow redef per-option)")
+    {
+        CONTEXT("when an option without FLSEQ is repeated")
+        {
+            IT("should still fail with HOPT_REDEFINED")
+            {
+                hopt_free();
+                hopt_reset();
+
+                int a_local = 0;
+
+                char* args[] = CREATE_ARGS("-a", "1", "-a", "2");
+                size = ARGS_SIZE(args);
+
+                hopt_add_option((char*)"a", 1, HOPT_TYPE_INT, &a_local, NULL);
+                result = hopt(size, args);
+
+                EXPECTS(result == -1);
+                EXPECTS(hopt_nerr == HOPT_REDEFINED);
+            }
+        }
+
+        CONTEXT("when an option with FLSEQ is repeated")
+        {
+            IT("should not error and keep the first value")
+            {
+                hopt_free();
+                hopt_reset();
+
+                int a_local = 0;
+
+                char* args[] = CREATE_ARGS("-a", "1", "-a", "2");
+                size = ARGS_SIZE(args);
+
+                hopt_add_option((char*)"a", 1, HOPT_TYPE_INT | HOPT_FLSEQ, &a_local, NULL);
+                result = hopt(size, args);
+
+                EXPECTS(result != -1);
+                EXPECTS(hopt_nerr == HOPT_SUCCESS);
+                EXPECTS(a_local == 1);
+            }
+
+            IT("should keep the first STR value when repeated 3+ times")
+            {
+                hopt_free();
+                hopt_reset();
+
+                char* s_local = NULL;
+
+                char* args[] = CREATE_ARGS("-s", "first", "-s", "second", "-s", "third");
+                size = ARGS_SIZE(args);
+
+                hopt_add_option((char*)"s", 1, HOPT_TYPE_STR | HOPT_FLSEQ, &s_local, NULL);
+                result = hopt(size, args);
+
+                EXPECTS(result != -1);
+                EXPECTS(hopt_nerr == HOPT_SUCCESS);
+                EXPECTS_STR_EQ(s_local, "first");
+            }
+        }
+    }
+
+    // HOPT_FLFLOW
+    TESTS("HOPT_FLFLOW (overwrite per-option, requires FLSEQ)")
+    {
+        CONTEXT("when an option with FLSEQ | FLFLOW is repeated")
+        {
+            IT("should keep the last value")
+            {
+                hopt_free();
+                hopt_reset();
+
+                int a_local = 0;
+
+                char* args[] = CREATE_ARGS("-a", "1", "-a", "2", "-a", "3");
+                size = ARGS_SIZE(args);
+
+                hopt_add_option((char*)"a", 1, HOPT_TYPE_INT | HOPT_FLSEQ | HOPT_FLFLOW, &a_local, NULL);
+                result = hopt(size, args);
+
+                EXPECTS(result == 6);
+                EXPECTS(hopt_nerr == HOPT_SUCCESS);
+                EXPECTS(a_local == 3);
+            }
+
+            IT("should overwrite STR value with the last one")
+            {
+                hopt_free();
+                hopt_reset();
+
+                char* s_local = NULL;
+
+                char* args[] = CREATE_ARGS("-s", "first", "-s", "second", "-s", "third");
+                size = ARGS_SIZE(args);
+
+                hopt_add_option((char*)"s", 1, HOPT_TYPE_STR | HOPT_FLSEQ | HOPT_FLFLOW, &s_local, NULL);
+                result = hopt(size, args);
+
+                EXPECTS(result == 6);
+                EXPECTS(hopt_nerr == HOPT_SUCCESS);
+                EXPECTS_STR_EQ(s_local, "third");
+            }
+        }
+    }
+
+    // HOPT_FLCB
+    TESTS("HOPT_FLCB (callback)")
+    {
+        CONTEXT("when callback option is invoked")
+        {
+            IT("should call the callback once with the user arg")
+            {
+                hopt_free();
+                hopt_reset();
+
+                g_cb_calls        = 0;
+                g_cb_last_argc    = -1;
+                g_cb_last_arg     = (void*)-1;
+                g_cb_return_value = 0;
+
+                int user_arg = 1234;
+
+                char* args[] = CREATE_ARGS("-c", "hello");
+                size = ARGS_SIZE(args);
+
+                hopt_add_option((char*)"c", 1, HOPT_FLCB, test_callback, &user_arg, NULL);
+                result = hopt(size, args);
+
+                EXPECTS(hopt_nerr == HOPT_SUCCESS);
+                EXPECTS(g_cb_calls == 1);
+                EXPECTS(g_cb_last_argc == 1);
+                EXPECTS(g_cb_last_arg == &user_arg);
+            }
+        }
+
+        CONTEXT("when callback returns -1")
+        {
+            IT("should stop parsing with HOPT_CBERROR")
+            {
+                hopt_free();
+                hopt_reset();
+
+                g_cb_calls        = 0;
+                g_cb_return_value = -1;
+
+                char* args[] = CREATE_ARGS("-c", "x");
+                size = ARGS_SIZE(args);
+
+                hopt_add_option((char*)"c", 1, HOPT_FLCB, test_callback, (void*)0, NULL);
+                result = hopt(size, args);
+
+                EXPECTS(result == -1);
+                EXPECTS(hopt_nerr == HOPT_CBERROR);
+                EXPECTS(g_cb_calls == 1);
+            }
+        }
+
+        CONTEXT("when callback option takes zero arguments")
+        {
+            IT("should call the callback with argc=0")
+            {
+                hopt_free();
+                hopt_reset();
+
+                g_cb_calls        = 0;
+                g_cb_last_argc    = -1;
+                g_cb_return_value = 0;
+
+                char* args[] = CREATE_ARGS("-c");
+                size = ARGS_SIZE(args);
+
+                hopt_add_option((char*)"c", 0, HOPT_FLCB, test_callback, (void*)0, NULL);
+                result = hopt(size, args);
+
+                EXPECTS(hopt_nerr == HOPT_SUCCESS);
+                EXPECTS(g_cb_calls == 1);
+                EXPECTS(g_cb_last_argc == 0);
+            }
+        }
+    }
+
     delete (long*)mock;
-    
+
     // Résumé final
     printf("\n📊 RESUME\n");
     printf("=========\n");

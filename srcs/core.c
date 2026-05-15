@@ -105,7 +105,7 @@ hopt_convert_and_store_value(t_hopt* hopt_restrict h, char* arg, unsigned int i,
 {
 	long long	at = 0LL;
 	double		ad = 0.0;
-	switch (i_hopt_maps[h->f.n].flag)
+	switch (i_hopt_maps[h->f.n].flag & 0xF)
 	{
 		case HOPT_TYPE_STR:
 			memcpy(current_map->mem + i * sizeof(char*), &arg, sizeof(char*));
